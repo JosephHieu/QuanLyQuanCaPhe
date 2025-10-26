@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+<nav th:fragment="sidebar" class="sidebar-nav">
+
+    <ul sec:authorize="isAuthenticated()">
+        <li><a th:href="@{/}" class="active">Trang chủ</a></li>
+        <li><a th:href="@{/profile}">Trang cá nhân</a></li>
+        <li><a th:href="@{/sales}">Quản lý bán hàng</a></li>
+    </ul>
+
+    <div sec:authorize="hasRole('ADMIN')">
+        <ul>
+            <li><a th:href="@{/admin/nhanvien}">Quản lý nhân viên</a></li>
+            <li><a th:href="@{/admin/thietbi}">Quản lý trang thiết bị</a></li>
+            <li><a th:href="@{/admin/khohang}">Quản lý kho hàng</a></li>
+            <li><a th:href="@{/admin/thucdon}">Quản lý thực đơn</a></li>
+            <li><a th:href="@{/admin/marketing}">Quản lý Marketing</a></li>
+            <li><a th:href="@{/admin/ngansach}">Quản lý ngân sách</a></li>
+            <li><a th:href="@{/admin/data}">Quản lý dữ liệu</a></li>
+            <li><a th:href="@{/admin/reports}">Thống kê, báo cáo</a></li>
+        </ul>
+    </div>
+
+</nav>
+
+</body>
+</html>

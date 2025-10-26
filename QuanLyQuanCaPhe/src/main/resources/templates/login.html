@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Phần mềm quản lý quán cà phê ver 1.0</title>
+    <style>
+        /* CSS để tái tạo giao diện từ hình ảnh */
+        /* 1. Thiết lập toàn bộ trang */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            height: 90vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .login {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 15px;
+            height: 100%;
+        }
+
+        /* 2. Container chính cho form */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 400px;
+            width: 500px;
+            border: 1px solid black;
+        }
+
+        .login-form {
+
+        }
+
+        h1 {
+            color: #4E3470;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+        }
+
+        /* 4. Nhóm các trường (nhãn + input) */
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* 5. Nhãn (Tên đăng nhập, Mật khẩu) */
+        .form-group label {
+            font-size: 1.1em;
+            min-width: 120px;
+            text-align: left;
+            margin-right: 15px;
+        }
+
+        /* 6. Ô input */
+        .form-group input {
+            width: 250px;
+            padding: 8px;
+            font-size: 1em;
+            border: 1px solid #767676;
+        }
+
+        /* 7. Nút "Đăng nhập" */
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 8px 18px;
+            font-size: 1em;
+            background-color: #f0f0f0;
+            border: 1px solid #767676;
+            cursor: pointer;
+        }
+
+        /* Hiệu ứng khi di chuột vào nút */
+        button:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="login">
+        <div class="login-container">
+            <div class="login-form">
+                <h1>ĐĂNG NHẬP</h1>
+
+                <form th:action="@{/login}" method="post">
+
+                    <div class="form-group">
+                        <label for="username">Tên đăng nhập:</label>
+                        <input type="text" id="username" name="username" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Mật khẩu :</label>
+                        <input type="password" id="password" name="password" />
+                    </div>
+
+                    <div class="button-container">
+                        <button type="submit">Đăng nhập</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>
