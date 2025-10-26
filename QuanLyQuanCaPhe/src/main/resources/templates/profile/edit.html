@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chỉnh sửa Trang cá nhân</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+</head>
+<body>
+
+<div class="header-bar">
+    Phần mềm quản lý quán cà phê ver 1.0
+</div>
+
+<div class="page-container">
+
+    <div class="sidebar-wrapper">
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+        <div class="sidebar-footer">
+            <button>Giới thiệu</button>
+        </div>
+    </div>
+
+    <form class="main-content" th:action="@{/profile/update}" th:object="${nhanVien}" method="post">
+
+        <div class="breadcrumb">Trang cá nhân / Chỉnh sửa</div>
+
+        <div class="profile-container">
+
+            <div class="profile-info">
+
+                <div class="info-item">
+                    <label>Họ và tên:</label>
+                    <input type="text" th:field="*{hoTen}" />
+                </div>
+                <div class="info-item">
+                    <label>Chức vụ:</label>
+                    <span class="readonly" th:text="*{chucVu.tenChucVu}">Nhân viên pha chế</span>
+                </div>
+                <div class="info-item">
+                    <label>Địa chỉ:</label>
+                    <input type="text" th:field="*{diaChi}" />
+                </div>
+                <div class="info-item">
+                    <label>Lương:</label>
+                    <span class="readonly" th:text="${#numbers.formatDecimal(nhanVien.chucVu.luong, 0, 'COMMA', 0, 'POINT')}">5.000.000</span>
+                </div>
+                <div class="info-item">
+                    <label>Số điện thoại:</label>
+                    <input type="text" th:field="*{soDienThoai}" />
+                </div>
+
+                <div class="info-credentials">
+                    <div class="info-item">
+                        <label>Tên đăng nhập:</label>
+                        <span class="readonly" th:text="*{taiKhoan.tenDangNhap}">vanthe14</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Mật khẩu:</label>
+                        <span class="readonly">********</span>
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" class="save-button">Lưu thay đổi</button>
+                    <a th:href="@{/profile}" class="edit-button">Hủy bỏ</a>
+                </div>
+            </div>
+
+            <div class="profile-avatar">
+                <img th:src="@{/images/default-avatar.png}" alt="Ảnh đại diện" />
+            </div>
+
+        </div>
+
+        <a th:href="@{/logout}" class="logout-button"
+           onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+            Đăng xuất
+        </a>
+    </form>
+
+    <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
+
+</div>
+</body>
+</html>

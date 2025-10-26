@@ -93,6 +93,10 @@
             <div class="login-form">
                 <h1>ĐĂNG NHẬP</h1>
 
+                <div th:if="${param.logout}" style="color: green; text-align: center; margin-bottom: 10px;">
+                    Bạn đã đăng xuất thành công.
+                </div>
+
                 <form th:action="@{/login}" method="post">
 
                     <div class="form-group">

@@ -13,6 +13,7 @@ public class AdminController {
     public String adminHomePage(Model model, @AuthenticationPrincipal UserDetails userDetails) {
 
         model.addAttribute("username", userDetails.getUsername());
+        model.addAttribute("currentPage", "home");
 
         return "home/admin_home";
     }
