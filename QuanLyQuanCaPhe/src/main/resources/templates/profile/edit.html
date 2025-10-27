@@ -4,56 +4,66 @@
     <meta charset="UTF-8">
     <title>Chỉnh sửa Trang cá nhân</title>
     <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <style>
+        /* ... (CSS của bạn) ... */
+        .form-avatar { /* Đảm bảo có CSS cho phần avatar */
+            width: 180px; text-align: center;
+        }
+        .form-avatar img, .form-avatar .avatar-placeholder {
+            width: 150px; height: 150px; border: 1px solid #aaa;
+            background-color: #ddd; margin: 0 auto 10px auto; display: block;
+        }
+        .form-avatar button { width: 150px; margin-top: 5px;} /* Thêm margin */
+    </style>
 </head>
 <body>
 
-<div class="header-bar">
-    Phần mềm quản lý quán cà phê ver 1.0
-</div>
+<div th:insert="~{fragments/header :: header}"></div>
 
 <div class="page-container">
 
     <div class="sidebar-wrapper">
         <div th:insert="~{fragments/sidebar :: sidebar}"></div>
-        <div class="sidebar-footer">
-            <button>Giới thiệu</button>
-        </div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
     </div>
 
-    <form class="main-content" th:action="@{/profile/update}" th:object="${nhanVien}" method="post">
+    <form class="main-content" th:action="@{/profile/update}" th:object="${nhanVien}" method="post" enctype="multipart/form-data">
 
         <div class="breadcrumb">Trang cá nhân / Chỉnh sửa</div>
+
+        <div th:if="${saveError}" style="color: red; background-color: #ffe0e0; border: 1px solid red; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+            <strong th:text="${saveError}"></strong>
+        </div>
+        <div th:if="${fileError}" style="color: red; background-color: #ffe0e0; border: 1px solid red; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+            <strong th:text="${fileError}"></strong>
+        </div>
+
 
         <div class="profile-container">
 
             <div class="profile-info">
-
                 <div class="info-item">
                     <label>Họ và tên:</label>
                     <input type="text" th:field="*{hoTen}" />
                 </div>
                 <div class="info-item">
                     <label>Chức vụ:</label>
-                    <span class="readonly" th:text="*{chucVu.tenChucVu}">Nhân viên pha chế</span>
-                </div>
+                    <span class="readonly" th:text="*{chucVu.tenChucVu}"></span> </div>
                 <div class="info-item">
                     <label>Địa chỉ:</label>
                     <input type="text" th:field="*{diaChi}" />
                 </div>
                 <div class="info-item">
                     <label>Lương:</label>
-                    <span class="readonly" th:text="${#numbers.formatDecimal(nhanVien.chucVu.luong, 0, 'COMMA', 0, 'POINT')}">5.000.000</span>
-                </div>
+                    <span class="readonly" th:text="${#numbers.formatDecimal(nhanVien.chucVu?.luong, 0, 'COMMA', 0, 'POINT')}"></span> </div>
                 <div class="info-item">
                     <label>Số điện thoại:</label>
                     <input type="text" th:field="*{soDienThoai}" />
                 </div>
-
                 <div class="info-credentials">
                     <div class="info-item">
                         <label>Tên đăng nhập:</label>
-                        <span class="readonly" th:text="*{taiKhoan.tenDangNhap}">vanthe14</span>
-                    </div>
+                        <span class="readonly" th:text="*{taiKhoan?.tenDangNhap}"></span> </div>
                     <div class="info-item">
                         <label>Mật khẩu:</label>
                         <span class="readonly">********</span>
@@ -66,20 +76,52 @@
                 </div>
             </div>
 
-            <div class="profile-avatar">
-                <img th:src="@{/images/default-avatar.png}" alt="Ảnh đại diện" />
+            <div class="form-avatar">
+                <input type="file" id="anhInput" name="anhFile" accept="image/*" style="display: none;" onchange="previewImageEdit(event)"/>
+
+                <img th:if="${nhanVien.taiKhoan?.anh != null}"
+                     th:src="@{/profile/image}"
+                     alt="Ảnh đại diện" id="avatarImageEdit" />
+                <div th:if="${nhanVien.taiKhoan?.anh == null}"
+                     class="avatar-placeholder" id="avatarPreviewEdit">
+                </div>
+
+                <button type="button" onclick="document.getElementById('anhInput').click();">
+                    Thay đổi ảnh...
+                </button>
             </div>
+        </div> <a th:href="@{/logout}" class="logout-button"
+                  onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+        Đăng xuất
+    </a>
+    </form> <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
 
-        </div>
+    <script>
+        function previewImageEdit(event) {
+            const reader = new FileReader();
+            reader.onload = function(){
+                const imgElement = document.getElementById('avatarImageEdit');
+                const previewDiv = document.getElementById('avatarPreviewEdit');
 
-        <a th:href="@{/logout}" class="logout-button"
-           onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
-            Đăng xuất
-        </a>
-    </form>
-
-    <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
-
+                if (imgElement) { // Nếu đang hiển thị ảnh cũ
+                    imgElement.src = reader.result;
+                } else if (previewDiv) { // Nếu đang hiển thị placeholder
+                    previewDiv.innerHTML = ''; // Xóa placeholder
+                    const img = document.createElement('img');
+                    img.src = reader.result;
+                    img.style.width = '150px';
+                    img.style.height = '150px';
+                    img.style.border = '1px solid #aaa';
+                    img.id = 'avatarImageEdit'; // Thêm ID để lần sau cập nhật
+                    previewDiv.parentNode.insertBefore(img, previewDiv); // Chèn ảnh vào trước
+                    previewDiv.remove(); // Xóa div placeholder
+                }
+            };
+            if (event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        }
+    </script>
 </div>
 </body>
 </html>

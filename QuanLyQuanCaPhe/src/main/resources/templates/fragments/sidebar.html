@@ -27,10 +27,49 @@
 
     <div sec:authorize="hasRole('ADMIN')">
         <ul>
-            <li>
+            <li class="has-submenu">
+
                 <a th:href="@{/admin/nhanvien}"
-                   th:classappend="${currentPage == 'admin_nhanvien' ? 'active' : ''}">Quản lý nhân viên</a>
+                   th:classappend="${currentPage != null && #strings.startsWith(currentPage, 'admin_nhanvien') ? 'active' : ''}">
+                    Quản lý nhân viên
+                </a>
+
+                <ul class="submenu"
+                    th:if="${currentPage != null && #strings.startsWith(currentPage, 'admin_nhanvien')}">
+
+                    <li>
+                        <a th:href="@{/admin/nhanvien}"
+                           th:classappend="${currentPage == 'admin_nhanvien_list' ? 'active-sub' : ''}">
+                            » Xem danh sách
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/nhanvien/them}"
+                           th:classappend="${currentPage == 'admin_nhanvien_them' ? 'active-sub' : ''}">
+                            » Thêm nhân viên
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/nhanvien/timkiem}"
+                           th:classappend="${currentPage == 'admin_nhanvien_chinhsua' ? 'active-sub' : ''}">
+                            » Chỉnh sửa nhân viên
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/nhanvien/timkiem}"
+                           th:classappend="${currentPage == 'admin_nhanvien_xoa' ? 'active-sub' : ''}">
+                            » Xóa nhân viên
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/nhanvien/timkiem}"
+                           th:classappend="${currentPage == 'admin_nhanvien_timkiem' ? 'active-sub' : ''}">
+                            » Tìm kiếm
+                        </a>
+                    </li>
+                </ul>
             </li>
+
             <li>
                 <a th:href="@{/admin/thietbi}"
                    th:classappend="${currentPage == 'admin_thietbi' ? 'active' : ''}">Quản lý trang thiết bị</a>

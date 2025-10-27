@@ -33,7 +33,31 @@ body {
     background-color: #cce7ff; border-left: 3px solid #007bff;
     font-weight: bold;
 }
-/* Nút Giới thiệu */
+
+/* Định dạng chung cho menu con */
+.sidebar-nav ul.submenu {
+    list-style: none;
+    padding-left: 20px; /* Thụt vào 1 chút */
+    background-color: #fdfdfd; /* Màu nền hơi khác */
+}
+
+/* Định dạng link con */
+.sidebar-nav ul.submenu li a {
+    padding: 8px 15px;
+    font-size: 0.9em;
+    border-bottom: none; /* Bỏ border cho mục con */
+    color: #555; /* Màu chữ xám hơn */
+}
+
+.sidebar-nav ul.submenu li a.active-sub {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.sidebar-nav ul.submenu li a:hover {
+    color: #007bff;
+}
+
 .sidebar-footer { padding: 10px; border-top: 1px solid #aaa; }
 .sidebar-footer button {
     width: 100%; padding: 10px; font-size: 1em;
@@ -41,26 +65,24 @@ body {
     cursor: pointer;
 }
 
-/* === Main Content (Nội dung chính bên phải) === */
 .main-content {
     flex: 1; padding: 20px;
     background-color: #f4f4f4; /* Màu xám nhạt */
     overflow-y: auto;
-    position: relative; /* Thêm để định vị nút Đăng xuất */
+    position: relative;
 }
 .breadcrumb { font-size: 0.9em; color: #555; margin-bottom: 20px; }
 
 /* === CSS cho form Profile === */
 .profile-container {
     display: flex;
-    gap: 30px; /* Khoảng cách giữa thông tin và ảnh */
+    gap: 30px;
 }
 .profile-info {
-    flex: 1; /* Chiếm nhiều không gian hơn */
+    flex: 1;
     display: grid;
-    /* Tạo lưới 2 cột */
     grid-template-columns: 1fr 1fr;
-    gap: 20px 30px; /* Khoảng cách (dọc, ngang) */
+    gap: 20px 30px;
     font-size: 1.1em;
 }
 .info-item {
@@ -76,7 +98,6 @@ body {
     color: #000;
 }
 
-/* Cột Tên đăng nhập/Mật khẩu đặc biệt */
 .info-credentials {
     grid-column: 1 / span 2; /* Chiếm 2 cột */
     display: flex;
@@ -93,7 +114,7 @@ body {
     width: 150px;
     height: 150px;
     border: 1px solid #aaa;
-    background-color: #ddd; /* Màu nền cho ảnh silhouette */
+    background-color: #ddd;
 }
 
 /* Nút Chỉnh sửa */

@@ -68,7 +68,15 @@
             </div>
 
             <div class="profile-avatar">
-                <img th:src="@{/images/default-avatar.png}" alt="Ảnh đại diện" />
+                <img th:if="${nhanVien.taiKhoan?.anh != null}"
+                     th:src="@{/profile/image}"
+                     alt="Ảnh đại diện"
+                     style="width: 150px; height: 150px; border: 1px solid #aaa;" />
+
+                <div th:if="${nhanVien.taiKhoan?.anh == null}"
+                     class="avatar-placeholder"
+                     style="width: 150px; height: 150px; border: 1px solid #aaa; background-color: #ddd; margin: 0 auto;">
+                </div>
             </div>
 
         </div>
