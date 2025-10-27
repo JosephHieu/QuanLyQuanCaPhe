@@ -97,24 +97,23 @@
 
     <div class="sidebar-wrapper">
         <div th:insert="~{fragments/sidebar :: sidebar}"></div>
-
         <div th:insert="~{fragments/footer :: footer}"></div>
     </div>
 
     <main class="main-content">
-        <div class="breadcrumb">Thêm nhân viên</div>
+        <div class="breadcrumb" th:text="${nhanVien.maNhanVien == null ? 'Thêm nhân viên' : 'Chỉnh sửa nhân viên'}"></div>
 
-        <form th:action="@{/admin/nhanvien/save}"
-              th:object="${nhanVien}"
-              method="post"
-              enctype="multipart/form-data">
-            <div th:if="${saveError}" style="color: red; background-color: #ffe0e0; border: 1px solid red; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
-                <strong th:text="${saveError}"></strong>
+        <form th:action="${nhanVien.maNhanVien == null ? '/admin/nhanvien/save' : '/admin/nhanvien/update'}"
+              th:object="${nhanVien}" method="post" enctype="multipart/form-data">
+
+            <input type="hidden" th:if="${nhanVien.maNhanVien != null}" th:field="*{maNhanVien}" />
+
+            <div th:if="${saveError != null or fileError != null or errorMessage != null}" class="global-error-message">
+                <strong th:text="${saveError != null ? saveError : (fileError != null ? fileError : errorMessage)}"></strong>
             </div>
+
             <div class="form-container">
-
                 <div class="form-fields">
-
                     <label for="hoTen" class="required">Họ và tên:</label>
                     <input type="text" id="hoTen" th:field="*{hoTen}" required />
 
@@ -128,88 +127,92 @@
                             <option th:each="cv : ${dsChucVu}"
                                     th:value="${cv.maChucVu}"
                                     th:text="${cv.tenChucVu}"
-                                    th:data-luong="${#numbers.formatDecimal(cv.luong, 0, 'COMMA', 0, 'POINT')}">
+                                    th:data-luong="${#numbers.formatDecimal(cv.luong, 0, 'COMMA', 0, 'POINT')}"
+                                    th:selected="${nhanVien.chucVu != null && nhanVien.chucVu.maChucVu == cv.maChucVu}">
                             </option>
                         </select>
                         <label for="luong">Lương:</label>
-                        <input type="text" id="luong" readonly />
+                        <input type="text" id="luong" readonly
+                               th:value="${nhanVien.chucVu != null ? #numbers.formatDecimal(nhanVien.chucVu.luong, 0, 'COMMA', 0, 'POINT') : ''}"/>
+                    </div>
+                    <div style="grid-column: 2 / 3;">
+                        <span th:if="${chucVuError}" th:text="${chucVuError}" class="error-message" style="margin-top: -10px;"></span>
                     </div>
 
-                    <div style="grid-column: 2 / 3;">
-                        <span th:if="${chucVuError}"
-                              th:text="${chucVuError}"
-                              style="color: red; font-size: 0.9em; display: block; margin-top: -10px;">
-                        </span>
-                    </div>
 
                     <label for="soDienThoai" class="required">Số điện thoại:</label>
                     <input type="text" id="soDienThoai" th:field="*{soDienThoai}" required />
 
                     <label for="tenDangNhap">Tên đăng nhập:</label>
-                    <input type="text" id="tenDangNhap" name="tenDangNhap" />
+                    <div>
+                        <input type="text" id="tenDangNhap" name="tenDangNhap"
+                               th:value="*{taiKhoan?.tenDangNhap}"
+                               th:readonly="${nhanVien.maNhanVien != null}"
+                               th:required="${nhanVien.maNhanVien == null}" />
+                        <span th:if="${usernameError}" th:text="${usernameError}" class="error-message"></span>
+                    </div>
 
-                    <label for="matKhau">Mật khẩu:</label>
-                    <input type="password" id="matKhau" name="matKhau" />
+
+                    <label for="matKhau">
+                        <span th:if="${nhanVien.maNhanVien == null}" class="required">Mật khẩu:</span>
+                        <span th:if="${nhanVien.maNhanVien != null}">Mật khẩu mới:</span>
+                    </label>
+                    <input type="password" id="matKhau" name="matKhauMoi"
+                           th:placeholder="${nhanVien.maNhanVien != null ? '(Để trống nếu không đổi)' : ''}"
+                           th:required="${nhanVien.maNhanVien == null}" />
 
                     <div class="form-actions">
-                        <button type="submit">Thêm</button>
-                        <a th:href="@{/admin/nhanvien}" role="button">Hủy</a>
+                        <button type="submit" th:text="${nhanVien.maNhanVien == null ? 'Thêm' : 'Lưu'}"></button>
+                        <a th:href="@{/admin/nhanvien}" class="cancel-button" role="button">Hủy</a>
                     </div>
 
-                    <div class="required-note">
-                        (*): Các trường bắt buộc nhập
-                    </div>
+                    <div class="required-note">(*): Các trường bắt buộc nhập</div>
                 </div>
 
                 <div class="form-avatar">
-
-                    <input type="file" id="anhInput" name="anhFile" accept="image/*" style="display: none;" onchange="previewImage(event)"/>
-                    <div class="avatar-placeholder" id="avatarPreview">
-                    </div>
-
-                    <button type="button" onclick="document.getElementById('anhInput').click();">
-                        Chọn ảnh...
+                    <input type="file" id="anhInput" name="anhFile" accept="image/*" style="display: none;" onchange="previewImageEdit(event)"/>
+                    <img th:if="${nhanVien.maNhanVien != null && nhanVien.taiKhoan?.anh != null}"
+                         th:src="@{/admin/nhanvien/image/{id}(id=${nhanVien.maNhanVien})}" alt="Ảnh đại diện" id="avatarImageEdit" />
+                    <div th:if="${nhanVien.maNhanVien == null || (nhanVien.maNhanVien != null && nhanVien.taiKhoan?.anh == null)}"
+                         class="avatar-placeholder" id="avatarPreviewEdit"></div>
+                    <button type="button" onclick="document.getElementById('anhInput').click();"
+                            th:text="${nhanVien.maNhanVien == null ? 'Chọn ảnh...' : 'Thay đổi...'}">
                     </button>
+                    <span th:if="${fileError}" th:text="${fileError}" class="error-message"></span>
                 </div>
 
-            </div>
-        </form>
-
-    </main>
-</div>
+            </div> </form> </main> </div> <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
 
 <script>
-
-    function previewImage(event) {
+    // Hàm xem trước ảnh (giữ nguyên hoặc dùng bản cập nhật từ lần trước)
+    function previewImageEdit(event) {
         const reader = new FileReader();
         reader.onload = function(){
-            // Hiển thị ảnh vào placeholder
-            const previewDiv = document.getElementById('avatarPreview');
-            previewDiv.innerHTML = ''; // Xóa placeholder cũ
-            const img = document.createElement('img');
-            img.src = reader.result;
-            img.style.width = '150px';
-            img.style.height = '150px';
-            img.style.border = '1px solid #aaa';
-            previewDiv.appendChild(img);
+            const imgElement = document.getElementById('avatarImageEdit');
+            const previewDiv = document.getElementById('avatarPreviewEdit');
+            if (imgElement) {
+                imgElement.src = reader.result;
+            } else if (previewDiv) {
+                previewDiv.innerHTML = ''; // Clear placeholder
+                const img = document.createElement('img');
+                img.src = reader.result;
+                img.alt = 'Ảnh xem trước';
+                img.id = 'avatarImageEdit'; // Assign ID
+                previewDiv.parentNode.insertBefore(img, previewDiv);
+                previewDiv.remove();
+            }
         };
-        // Đọc file ảnh người dùng vừa chọn
-        if (event.target.files[0]) {
+        if (event.target.files && event.target.files[0]) {
             reader.readAsDataURL(event.target.files[0]);
         }
     }
 
+    // Hàm cập nhật lương (giữ nguyên)
     document.getElementById('chucVu').addEventListener('change', function() {
-        // Lấy option đang được chọn
         var selectedOption = this.options[this.selectedIndex];
-
-        // Lấy giá trị lương từ data-luong (mà ta đã gán bằng Thymeleaf)
         var luong = selectedOption.getAttribute('data-luong');
-
-        // Gán vào ô input Lương
         document.getElementById('luong').value = luong ? luong : '';
     });
 </script>
-
 </body>
 </html>

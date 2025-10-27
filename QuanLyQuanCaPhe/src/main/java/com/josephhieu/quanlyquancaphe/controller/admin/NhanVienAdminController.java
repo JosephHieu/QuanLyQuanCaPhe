@@ -1,17 +1,16 @@
 package com.josephhieu.quanlyquancaphe.controller.admin;
 
 import com.josephhieu.quanlyquancaphe.entity.NhanVien;
+import com.josephhieu.quanlyquancaphe.exception.NotFoundException;
 import com.josephhieu.quanlyquancaphe.exception.UsernameAlreadyExistsException;
 import com.josephhieu.quanlyquancaphe.service.ChucVuService;
 import com.josephhieu.quanlyquancaphe.service.NhanVienService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -114,5 +113,108 @@ public class NhanVienAdminController {
         model.addAttribute("currentPage", "admin_nhanvien_list");
 
         return "admin/nhanvien/list";
+    }
+
+    /**
+     * PHƯƠNG THỨC MỚI: Xử lý CẬP NHẬT thông tin nhân viên
+     * URL: /admin/nhanvien/update (POST)
+     */
+    @PostMapping("/admin/nhanvien/update")
+    public String updateNhanVien(
+            @ModelAttribute("nhanVien") NhanVien nhanVienFromForm, // Nhận data từ form (ID, HoTen, DiaChi, SoDienThoai)
+            @RequestParam("maChucVu") String maChucVu,
+            @RequestParam(value = "matKhauMoi", required = false) String matKhauMoi, // Mật khẩu mới, không bắt buộc
+            @RequestParam("anhFile") MultipartFile anhFile,
+            Model model // Để xử lý lỗi
+    ) {
+        try {
+            // Gọi service để cập nhật
+            nhanVienService.updateNhanVien(
+                    nhanVienFromForm.getMaNhanVien(), // Truyền ID vào
+                    nhanVienFromForm,
+                    maChucVu,
+                    matKhauMoi,
+                    anhFile
+            );
+        } catch (NotFoundException e) {
+            // Xử lý nếu ID không tìm thấy (hiếm khi xảy ra nếu GET thành công)
+            model.addAttribute("errorMessage", e.getMessage());
+            // Gửi lại dữ liệu form và ds chức vụ
+            model.addAttribute("nhanVien", nhanVienFromForm);
+            model.addAttribute("dsChucVu", chucVuService.getAllChucVu());
+            model.addAttribute("currentPage", "admin_nhanvien_chinhsua");
+            return "admin/nhanvien/form";
+        } catch (IOException e) {
+            model.addAttribute("fileError", "Lỗi khi xử lý file ảnh!");
+            // Gửi lại dữ liệu form và ds chức vụ
+            model.addAttribute("nhanVien", nhanVienFromForm);
+            model.addAttribute("dsChucVu", chucVuService.getAllChucVu());
+            model.addAttribute("currentPage", "admin_nhanvien_chinhsua");
+            return "admin/nhanvien/form";
+        } catch (RuntimeException e) { // Bắt lỗi khác (VD: Chức vụ không hợp lệ từ Service)
+            model.addAttribute("saveError", "Lỗi cập nhật: " + e.getMessage());
+            // Gửi lại dữ liệu form và ds chức vụ
+            model.addAttribute("nhanVien", nhanVienFromForm); // Dùng data từ form để giữ lại thay đổi
+            // Cần lấy lại ChucVu object đầy đủ nếu muốn hiển thị đúng Lương khi có lỗi
+            nhanVienService.getNhanVienById(nhanVienFromForm.getMaNhanVien()).ifPresent(nv -> nhanVienFromForm.setChucVu(nv.getChucVu()));
+            model.addAttribute("dsChucVu", chucVuService.getAllChucVu());
+            model.addAttribute("currentPage", "admin_nhanvien_chinhsua");
+            return "admin/nhanvien/form";
+        }
+
+        return "redirect:/admin/nhanvien"; // Về trang danh sách
+    }
+
+    @GetMapping("/admin/nhanvien/edit/{id}")
+    public String showEditNhanVienForm(@PathVariable("id") String maNhanVien, Model model) {
+        try {
+            // 1. Lấy thông tin nhân viên cần sửa
+            NhanVien nhanVien = nhanVienService.getNhanVienById(maNhanVien)
+                    .orElseThrow(() -> new NotFoundException("Không tìm thấy nhân viên với mã: " + maNhanVien));
+
+            // 2. Gửi thông tin ra form
+            model.addAttribute("nhanVien", nhanVien);
+
+            // 3. Gửi danh sách chức vụ
+            model.addAttribute("dsChucVu", chucVuService.getAllChucVu());
+
+            // 4. Đánh dấu trang hiện tại cho sidebar
+            model.addAttribute("currentPage", "admin_nhanvien_chinhsua"); // Đặt tên phù hợp với sidebar
+
+            // 5. Trả về file form (dùng chung)
+            return "admin/nhanvien/form";
+
+        } catch (NotFoundException e) {
+            // Xử lý nếu ID không tồn tại
+            // Ví dụ: Chuyển hướng về danh sách với thông báo lỗi
+            return "redirect:/admin/nhanvien?error=notFound";
+        }
+    }
+
+    /**
+     * PHƯƠNG THỨC MỚI: Hiển thị trang Tìm kiếm và xử lý tìm kiếm
+     * URL: /admin/nhanvien/timkiem
+     */
+    @GetMapping("/admin/nhanvien/timkiem")
+    public String showNhanVienSearchPage(
+            // Nhận từ khóa từ URL (?keyword=...), không bắt buộc
+            @RequestParam(value = "keyword", required = false) String keyword,
+            Model model
+    ) {
+        List<NhanVien> ketQuaTimKiem;
+
+        // Gọi service để tìm kiếm
+        ketQuaTimKiem = nhanVienService.searchNhanVienByName(keyword);
+
+        // Gửi kết quả (có thể rỗng) ra view
+        model.addAttribute("ketQuaTimKiem", ketQuaTimKiem);
+        // Gửi lại từ khóa đã nhập để hiển thị lại trên ô input
+        model.addAttribute("keyword", keyword);
+
+        // Gửi tín hiệu active cho sidebar
+        model.addAttribute("currentPage", "admin_nhanvien_timkiem");
+
+        // Trả về file HTML của trang tìm kiếm
+        return "admin/nhanvien/search";
     }
 }

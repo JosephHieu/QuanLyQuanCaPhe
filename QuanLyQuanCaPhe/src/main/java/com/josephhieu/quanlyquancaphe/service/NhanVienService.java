@@ -10,10 +10,10 @@ import com.josephhieu.quanlyquancaphe.repository.NhanVienRepository;
 import com.josephhieu.quanlyquancaphe.repository.TaiKhoanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.josephhieu.quanlyquancaphe.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +36,74 @@ public class NhanVienService {
     // Lấy tất cả nhân viên
     public List<NhanVien> getAllNhanVien() {
         return nhanVienRepository.findAll();
+    }
+
+    public List<NhanVien> searchNhanVienByName(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            // Nếu không có từ khóa, trả về danh sách rỗng hoặc tất cả (tùy bạn chọn)
+            return getAllNhanVien();
+        }
+        return nhanVienRepository.findByHoTenContainingIgnoreCase(keyword);
+    }
+
+    public Optional<NhanVien> getNhanVienById(String maNhanVien) {
+        return nhanVienRepository.findById(maNhanVien);
+    }
+
+    /**
+     * PHƯƠNG THỨC MỚI: Cập nhật thông tin nhân viên
+     */
+    @Transactional
+    public void updateNhanVien(
+            String maNhanVien, // ID của nhân viên cần sửa
+            NhanVien dataFromForm, // Dữ liệu mới từ form
+            String maChucVuMoi,
+            String matKhauMoi,
+            MultipartFile anhFile
+    ) throws NotFoundException, IOException {
+
+        // 1. Lấy nhân viên gốc từ CSDL
+        NhanVien originalNhanVien = nhanVienRepository.findById(maNhanVien)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy nhân viên với mã: " + maNhanVien));
+
+        TaiKhoan taiKhoan = originalNhanVien.getTaiKhoan();
+        if (taiKhoan == null) {
+            throw new RuntimeException("Nhân viên này không có tài khoản.");
+        }
+
+        // 2. Cập nhật các trường thông tin cơ bản
+        originalNhanVien.setHoTen(dataFromForm.getHoTen());
+        originalNhanVien.setDiaChi(dataFromForm.getDiaChi());
+        originalNhanVien.setSoDienThoai(dataFromForm.getSoDienThoai());
+
+        // 3. Cập nhật Chức vụ (nếu có thay đổi)
+        if (!originalNhanVien.getChucVu().getMaChucVu().equals(maChucVuMoi)) {
+            ChucVu chucVuMoi = chucVuRepository.findById(maChucVuMoi)
+                    .orElseThrow(() -> new RuntimeException("Chức vụ mới không hợp lệ"));
+            originalNhanVien.setChucVu(chucVuMoi);
+            // Cập nhật luôn QuyenHan trong TaiKhoan nếu cần
+            String quyenHanMoi = chucVuMoi.getTenChucVu().equalsIgnoreCase("Quản lý") ? "Admin" : "Staff";
+            taiKhoan.setQuyenHan(quyenHanMoi);
+        }
+
+        // 4. Cập nhật Mật khẩu (nếu có nhập mật khẩu mới)
+        boolean taiKhoanUpdated = false; // Cờ kiểm tra
+        if (matKhauMoi != null && !matKhauMoi.trim().isEmpty()) {
+            taiKhoan.setMatKhau(passwordEncoder.encode(matKhauMoi));
+            taiKhoanUpdated = true;
+        }
+
+        // 5. Cập nhật Ảnh (nếu có chọn file mới)
+        if (anhFile != null && !anhFile.isEmpty()) {
+            taiKhoan.setAnh(anhFile.getBytes());
+            taiKhoanUpdated = true;
+        }
+
+        // 6. Lưu lại các thay đổi
+        nhanVienRepository.save(originalNhanVien);
+        if (taiKhoanUpdated) {
+            taiKhoanRepository.save(taiKhoan); // Chỉ lưu TaiKhoan nếu MK hoặc Ảnh thay đổi
+        }
     }
 
     public NhanVien getNhanVienByTenDangNhap(String tenDangNhap) {

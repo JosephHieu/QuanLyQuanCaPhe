@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tìm kiếm Nhân viên</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <style>
+        .search-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .search-form input[type="text"] {
+            flex-grow: 1; /* Chiếm nhiều không gian */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .search-form button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .search-results table { /* Tái sử dụng CSS bảng từ list.html nếu có */
+            width: 100%; border-collapse: collapse; margin-top: 10px; background-color: #fff;
+        }
+        .search-results th, .search-results td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; }
+        .search-results th { background-color: #f4f4f4; font-weight: bold; }
+        .search-results td.col-luong { text-align: right; }
+        .search-results .actions a { /* CSS nút Sửa/Xóa */
+            text-decoration: none; padding: 4px 8px; margin-right: 5px; border-radius: 3px; font-size: 0.9em;
+        }
+        .btn-edit { background-color: #ffc107; color: #333; }
+        .btn-delete { background-color: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+<div th:insert="~{fragments/header :: header}"></div>
+
+<div class="page-container">
+    <div class="sidebar-wrapper">
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
+    </div>
+
+    <main class="main-content">
+        <div class="breadcrumb">Tìm kiếm nhân viên</div>
+
+        <form th:action="@{/admin/nhanvien/timkiem}" method="get" class="search-form">
+            <label for="keyword" style="font-weight: bold;">🔍</label>
+            <input type="text" id="keyword" name="keyword"
+                   th:value="${keyword}" placeholder="Nhập tên nhân viên cần tìm..." />
+            <button type="submit">➔ Tìm kiếm</button>
+        </form>
+
+        <div class="search-results">
+            <label style="font-weight: bold;">Kết quả:</label>
+            <table>
+                <thead>
+                <tr>
+                    <th>Họ tên</th>
+                    <th>Chức vụ</th>
+                    <th class="col-luong">Lương</th>
+                    <th>Hành động</th> </tr>
+                </thead>
+                <tbody>
+                <tr th:each="nhanVien : ${ketQuaTimKiem}">
+                    <td th:text="${nhanVien.hoTen}"></td>
+                    <td th:text="${nhanVien.chucVu?.tenChucVu}"></td>
+                    <td class="col-luong"
+                        th:text="${#numbers.formatDecimal(nhanVien.chucVu?.luong, 0, 'COMMA', 0, 'POINT')}">
+                    </td>
+                    <td class="actions">
+                        <a th:href="@{/admin/nhanvien/edit/{id}(id=${nhanVien.maNhanVien})}"
+                           class="btn-edit">Sửa</a>
+                        <a th:href="@{/admin/nhanvien/delete/{id}(id=${nhanVien.maNhanVien})}"
+                           class="btn-delete"
+                           onclick="return confirm('Bạn có chắc muốn xóa nhân viên này?');">Xóa</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(ketQuaTimKiem)}">
+                    <td colspan="4" style="text-align: center; font-style: italic;">
+                        Không tìm thấy nhân viên nào khớp.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body>
+</html>
