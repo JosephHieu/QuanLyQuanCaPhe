@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Bán hàng</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <style>
+        .main-content { background-color: #fff; /* Nền trắng cho khu vực chính */ }
+        .table-grid {
+            display: grid;
+            /* Tạo lưới 4 cột, tự động điều chỉnh chiều rộng */
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px; /* Khoảng cách giữa các ô */
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #f8f9fa; /* Nền xám nhạt cho lưới */
+            margin-bottom: 15px;
+        }
+        .table-item {
+            border: 1px solid #adb5bd; /* Viền xám đậm hơn */
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            min-height: 60px; /* Chiều cao tối thiểu */
+            display: flex; /* Căn giữa nội dung */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Định dạng màu nền dựa trên trạng thái */
+        .table-item.status-trong { background-color: #e9ecef; color: #495057; } /* Xám nhạt - Trống */
+        .table-item.status-co-khach { background-color: #ced4da; color: #212529; } /* Xám đậm - Có khách */
+        .table-item.status-dat-truoc { background-color: #fff3cd; color: #856404; } /* Vàng nhạt - Đặt trước */
+        /* Thêm hiệu ứng khi chọn */
+        .table-item.selected {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        .table-item small { font-weight: normal; font-size: 0.8em; margin-top: 5px; } /* Hiển thị trạng thái */
+
+        .action-buttons, .order-buttons {
+            display: flex;
+            gap: 10px; /* Khoảng cách giữa các nút */
+            margin-bottom: 15px;
+            padding: 0 15px; /* Canh lề */
+        }
+        .action-buttons button, .order-buttons button {
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .order-buttons button { flex-grow: 1; } /* Nút hàng dưới chiếm đều không gian */
+        .action-buttons button:hover, .order-buttons button:hover { background-color: #e2e6ea; }
+
+        /* === CSS MỚI CHO MODAL === */
+        .modal {
+            display: none; /* Ẩn ban đầu */
+            position: fixed; /* Che phủ toàn màn hình */
+            z-index: 1000; /* Hiển thị trên cùng */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Cho phép cuộn nếu nội dung dài */
+            background-color: rgba(0,0,0,0.4); /* Nền mờ */
+            padding-top: 60px; /* Khoảng cách từ trên xuống */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; /* Canh giữa */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 60%; /* Chiều rộng modal */
+            max-width: 500px;
+            border-radius: 5px;
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            position: absolute; /* Góc trên phải */
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+        }
+        .modal h4 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .modal table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+        .modal th, .modal td { border: 1px solid #ddd; padding: 8px; text-align: left;}
+        .modal th { background-color: #f2f2f2; }
+        .modal .reservation-info { margin-bottom: 20px; padding: 10px; border: 1px dashed #ccc; background-color: #f9f9f9; }
+        .modal .modal-actions { text-align: right; }
+        .modal .modal-actions button { padding: 8px 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div th:insert="~{fragments/header :: header}"></div>
+
+<div class="page-container">
+    <div class="sidebar-wrapper">
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
+    </div>
+
+    <main class="main-content">
+        <div class="breadcrumb">Quản lý bán hàng</div>
+
+        <div class="table-grid" id="tableGrid">
+            <div th:each="ban : ${dsBan}"
+                 th:classappend="'table-item status-' + ${#strings.toLowerCase(ban.tinhTrang)}"
+
+                 th:attr="data-maban=${ban.maBan}, data-tenban=${ban.tenBan}"
+
+                 onclick="selectTable(this)">
+                <span th:text="${ban.tenBan}">Bàn 01</span>
+                <small th:if="${ban.tinhTrang != 'Trống'}" th:text="'&lt;' + ${ban.tinhTrang} + '&gt;'">Trạng thái</small>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button onclick="viewTable()">Xem bàn</button>
+            <button onclick="moveTable()">Chuyển bàn</button>
+            <button onclick="splitTable()">Tách bàn</button>
+            <button onclick="mergeTable()">Gộp bàn</button>
+            <button onclick="cancelOrder()">Hủy bàn</button>
+            <button onclick="reserveTable()">Đặt bàn</button>
+        </div>
+
+        <div class="order-buttons">
+            <button onclick="selectMenu()">Chọn thực đơn.....</button>
+            <button onclick="processPayment()">Thanh toán.....</button>
+            <button onclick="printBill()">In ấn.....</button>
+        </div>
+
+        <div id="viewTableModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal('viewTableModal')">&times;</span>
+                <h4 id="modalTableName">Xem thông tin bàn X</h4>
+
+                <h5>Các món đã gọi:</h5>
+                <div style="max-height: 150px; overflow-y: auto;"> <table id="modalOrderItems">
+                    <thead>
+                    <tr>
+                        <th>Tên món</th>
+                        <th>SL</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                </div>
+
+
+                <h5>Đặt trước:</h5>
+                <div id="modalReservationInfo" class="reservation-info">
+                    Không có thông tin đặt trước.
+                </div>
+
+                <div class="modal-actions">
+                    <button onclick="closeModal('viewTableModal')">Đóng</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+    let selectedTableId = null;
+    let selectedTableName = null;
+
+    function selectTable(element) {
+        // Bỏ chọn tất cả các bàn khác
+        document.querySelectorAll('.table-item.selected').forEach(item => {
+            item.classList.remove('selected');
+        });
+
+        // Chọn bàn mới
+        element.classList.add('selected');
+        selectedTableId = element.getAttribute('data-maban');
+        selectedTableName = element.getAttribute('data-tenban'); // Lấy tên bàn
+        console.log('Đã chọn bàn:', selectedTableId); // Hiển thị ID bàn đã chọn trên console
+    }
+
+    // Hàm để mở đóng MODAL
+    function openModal(modalId) {
+        document.getElementById(modalId).style.display = 'block';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    // Các hàm xử lý nút bấm (hiện tại chỉ log ra console)
+    function viewTable() {
+        if (!selectedTableId) {
+            alert('Vui lòng chọn một bàn để xem.');
+            return;
+        }
+        console.log('Xem bàn:', selectedTableId);
+
+        // Gọi API backend để lấy chi tiết bàn
+        fetch(`/sales/table/${selectedTableId}`) // Dùng fetch API
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Không thể lấy thông tin bàn.');
+                }
+                return response.json(); // Chuyển đổi phản hồi thành JSON
+            })
+            .then(data => {
+                // Cập nhật nội dung modal với dữ liệu nhận được
+                document.getElementById('modalTableName').textContent = `Xem thông tin ${selectedTableName}`; // Hiển thị tên bàn
+
+                // Cập nhật bảng món ăn
+                const orderTableBody = document.getElementById('modalOrderItems').querySelector('tbody');
+                orderTableBody.innerHTML = ''; // Xóa dữ liệu cũ
+                if (data.orderedItems && data.orderedItems.length > 0) {
+                    data.orderedItems.forEach(item => {
+                        const row = orderTableBody.insertRow();
+                        row.insertCell(0).textContent = item.tenMon;
+                        row.insertCell(1).textContent = item.soLuong;
+                    });
+                } else {
+                    const row = orderTableBody.insertRow();
+                    row.insertCell(0).textContent = 'Chưa gọi món';
+                    row.insertCell(1).textContent = '-';
+                }
+
+
+                // Cập nhật thông tin đặt trước
+                const reservationDiv = document.getElementById('modalReservationInfo');
+                if (data.reservationInfo) {
+                    // Định dạng lại ngày giờ nếu cần
+                    const reservationTime = new Date(data.reservationInfo.ngayGioDat).toLocaleString('vi-VN');
+                    reservationDiv.textContent = `${data.reservationInfo.tenKhachHang}, ${reservationTime}`;
+                } else {
+                    reservationDiv.textContent = 'Không có thông tin đặt trước.';
+                }
+
+                // Hiển thị modal
+                openModal('viewTableModal');
+            })
+            .catch(error => {
+                console.error('Lỗi khi lấy thông tin bàn:', error);
+                alert('Đã xảy ra lỗi khi lấy thông tin bàn.');
+            });
+    }
+    function moveTable() { console.log('Chuyển bàn:', selectedTableId); }
+    function splitTable() { console.log('Tách bàn:', selectedTableId); }
+    function mergeTable() { console.log('Gộp bàn:', selectedTableId); }
+    function cancelOrder() { console.log('Hủy bàn:', selectedTableId); }
+    function reserveTable() { console.log('Đặt bàn:', selectedTableId); }
+    function selectMenu() { console.log('Chọn thực đơn cho bàn:', selectedTableId); }
+    function processPayment() { console.log('Thanh toán cho bàn:', selectedTableId); }
+    function printBill() { console.log('In hóa đơn cho bàn:', selectedTableId); }
+
+    // Đóng modal khi click ra ngoài
+    window.onclick = function(event) {
+        const modal = document.getElementById('viewTableModal');
+        if (event.target == modal) {
+            closeModal('viewTableModal');
+        }
+    }
+</script>
+</body>
+</html>
