@@ -133,3 +133,8 @@
 #splitTableModal .split-arrow { display: flex; align-items: center; font-size: 2em; padding: 0 10px;}
 #splitTableModal #destinationTableSelectSplit { width: 100%; padding: 8px; margin-bottom: 10px; }
 #splitTableModal #destinationItemsTable td:nth-child(2) { text-align: right; } /* Căn phải SL */
+
+/* CSS MỚI CHO MODAL HỦY BÀN */
+#cancelOrderModal .modal-content { max-width: 400px; text-align: center;} /* Nhỏ hơn, căn giữa */
+#cancelOrderModal p { margin-bottom: 20px; font-size: 1.1em; }
+#cancelOrderModal .modal-actions button { margin: 0 10px; } /* Khoảng cách nút */

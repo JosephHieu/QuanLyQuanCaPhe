@@ -36,6 +36,48 @@ public class SalesService {
     private ChiTietHoaDonRepository chiTietHoaDonRepository;
 
     /**
+     * PHƯƠNG THỨC MỚI: Xử lý hủy bàn/đơn hàng
+     */
+    @Transactional
+    public void cancelOrder(String maBan) {
+        // 1. Tìm bàn
+        Ban ban = banRepository.findById(maBan)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bàn: " + maBan));
+        if ("Trống".equalsIgnoreCase(ban.getTinhTrang())) {
+            throw new IllegalArgumentException("Bàn đang trống, không thể hủy.");
+        }
+
+        // 2. Tìm ChiTietDatBan và HoaDon đang hoạt động
+        ChiTietDatBan activeBooking = chiTietDatBanRepository.findByBanMaBanAndHoaDonTrangThai(maBan, false)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn/đặt bàn đang hoạt động để hủy cho bàn " + ban.getTenBan()));
+        HoaDon activeHoaDon = activeBooking.getHoaDon();
+
+        // 3. Xóa tất cả ChiTietHoaDon liên quan đến hóa đơn này
+        List<ChiTietHoaDon> itemsToDelete = chiTietHoaDonRepository.findByHoaDonMaHoaDon(activeHoaDon.getMaHoaDon());
+        if (!itemsToDelete.isEmpty()) {
+            chiTietHoaDonRepository.deleteAll(itemsToDelete);
+            System.out.println("Đã xóa " + itemsToDelete.size() + " chi tiết hóa đơn.");
+        }
+
+        // 4. Xóa bản ghi ChiTietDatBan
+        chiTietDatBanRepository.delete(activeBooking);
+        System.out.println("Đã xóa chi tiết đặt bàn.");
+
+
+        // 5. Xóa Hóa đơn
+        hoaDonRepository.delete(activeHoaDon);
+        System.out.println("Đã xóa hóa đơn.");
+
+        // 6. Cập nhật trạng thái bàn thành "Trống"
+        ban.setTinhTrang("Trống");
+        banRepository.save(ban);
+        System.out.println("Đã cập nhật trạng thái bàn thành Trống.");
+
+        System.out.println("Đã hủy thành công bàn " + ban.getTenBan());
+    }
+
+
+    /**
      * PHƯƠNG THỨC MỚI: Xử lý tách bàn
      */
     @Transactional

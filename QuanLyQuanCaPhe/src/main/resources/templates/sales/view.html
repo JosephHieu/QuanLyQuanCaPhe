@@ -38,7 +38,7 @@
             <button onclick="openMoveTableModal()">Chuyển bàn</button>
             <button onclick="openSplitTableModal()">Tách bàn</button>
             <button onclick="openMergeTableModal()">Gộp bàn</button>
-            <button onclick="cancelOrder()">Hủy bàn</button>
+            <button onclick="openCancelOrderModal()">Hủy bàn</button>
             <button onclick="reserveTable()">Đặt bàn</button>
         </div>
 
@@ -174,6 +174,17 @@
                 <div class="modal-actions" style="margin-top: 20px;">
                     <button onclick="confirmSplitTable()">Tách</button>
                     <button onclick="closeModal('splitTableModal')">Hủy</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="cancelOrderModal" class="modal">
+            <div class="modal-content">
+                <h4>Xác nhận hủy bàn</h4>
+                <p id="cancelConfirmText">Bạn có chắc muốn hủy bàn [Tên bàn] này hay không?</p>
+                <div class="modal-actions">
+                    <button onclick="confirmCancelOrder()">Có</button>
+                    <button onclick="closeModal('cancelOrderModal')">Không</button>
                 </div>
             </div>
         </div>
@@ -706,7 +717,58 @@
             });
     }
 
-    function cancelOrder() { console.log('Hủy bàn:', selectedTableId); }
+    // --- HÀM MỚI ĐỂ MỞ MODAL HỦY BÀN ---
+    function openCancelOrderModal() {
+        if (!selectedTableId) {
+            alert('Vui lòng chọn bàn muốn hủy.');
+            return;
+        }
+        // Kiểm tra xem bàn có trống không
+        const selectedTableElement = document.querySelector(`.table-item[data-maban="${selectedTableId}"]`);
+        if (selectedTableElement && selectedTableElement.classList.contains('status-trong')) {
+            alert('Bàn này đang trống, không thể hủy.');
+            return;
+        }
+
+        console.log('Mở modal hủy bàn:', selectedTableId);
+        document.getElementById('cancelConfirmText').textContent = `Bạn có chắc muốn hủy ${selectedTableName} này hay không?`;
+        openModal('cancelOrderModal');
+    }
+
+    // --- HÀM MỚI ĐỂ XÁC NHẬN HỦY BÀN ---
+    function confirmCancelOrder() {
+        if (!selectedTableId) return; // Kiểm tra lại
+
+        console.log('Xác nhận hủy bàn:', selectedTableId);
+
+        // Gọi API backend
+        fetch('/sales/cancel-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')]: document.querySelector('meta[name="_csrf"]')?.getAttribute('content')
+            },
+            body: JSON.stringify({ maBan: selectedTableId }) // Gửi ID bàn cần hủy
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text || 'Hủy bàn thất bại.') });
+                }
+                // Không cần parse JSON nếu backend chỉ trả về text hoặc 200 OK rỗng
+                return response.text(); // Hoặc response.json() nếu backend trả về JSON
+            })
+            .then(data => {
+                console.log('Hủy bàn thành công:', data);
+                closeModal('cancelOrderModal');
+                alert('Hủy bàn thành công!');
+                window.location.reload(); // Tải lại trang
+            })
+            .catch(error => {
+                console.error('Lỗi khi hủy bàn:', error);
+                alert(`Lỗi: ${error.message}`);
+            });
+    }
+
     function reserveTable() { console.log('Đặt bàn:', selectedTableId); }
     function selectMenu() { console.log('Chọn thực đơn cho bàn:', selectedTableId); }
     function processPayment() { console.log('Thanh toán cho bàn:', selectedTableId); }
@@ -718,10 +780,12 @@
         const moveModal = document.getElementById('moveTableModal');
         const mergeModal = document.getElementById('mergeTableModal');
         const splitModal = document.getElementById('splitTableModal'); // Thêm
+        const cancelModal = document.getElementById('cancelOrderModal'); // Thêm
         if (event.target == viewModal) closeModal('viewTableModal');
         if (event.target == moveModal) closeModal('moveTableModal');
         if (event.target == mergeModal) closeModal('mergeTableModal');
         if (event.target == splitModal) closeModal('splitTableModal'); // Thêm
+        if (event.target == cancelModal) closeModal('cancelOrderModal'); // Thêm
     }
 </script>
 </body>

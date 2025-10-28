@@ -1,9 +1,6 @@
 package com.josephhieu.quanlyquancaphe.controller;
 
-import com.josephhieu.quanlyquancaphe.dto.MergeTablesRequestDTO;
-import com.josephhieu.quanlyquancaphe.dto.MoveTableRequestDTO;
-import com.josephhieu.quanlyquancaphe.dto.SplitTableRequestDTO;
-import com.josephhieu.quanlyquancaphe.dto.TableDetailsDTO;
+import com.josephhieu.quanlyquancaphe.dto.*;
 import com.josephhieu.quanlyquancaphe.entity.Ban;
 import com.josephhieu.quanlyquancaphe.exception.NotFoundException;
 import com.josephhieu.quanlyquancaphe.service.BanService;
@@ -110,6 +107,28 @@ public class SalesController {
             e.printStackTrace();
             // Trả về 500 Internal Server Error
             return ResponseEntity.internalServerError().body("Lỗi hệ thống khi tách bàn.");
+        }
+    }
+
+    /**
+     * Endpoint MỚI: Xử lý yêu cầu hủy bàn
+     * URL: /sales/cancel-order (POST)
+     */
+    @PostMapping("/sales/cancel-order")
+    @ResponseBody
+    public ResponseEntity<?> cancelOrder(@RequestBody CancelOrderRequestDTO request) {
+        try {
+            salesService.cancelOrder(request.getMaBan());
+            // Trả về 200 OK (có thể không cần body)
+            return ResponseEntity.ok().build();
+            // Hoặc: return ResponseEntity.ok().body("{\"message\": \"Hủy bàn thành công!\"}");
+        } catch (NotFoundException | IllegalArgumentException e) {
+            // Trả về 400 Bad Request hoặc 404 Not Found tùy ngữ cảnh
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Trả về 500 Internal Server Error
+            return ResponseEntity.internalServerError().body("Lỗi hệ thống khi hủy bàn.");
         }
     }
 }
