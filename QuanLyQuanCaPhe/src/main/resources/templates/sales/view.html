@@ -39,7 +39,7 @@
             <button onclick="openSplitTableModal()">Tách bàn</button>
             <button onclick="openMergeTableModal()">Gộp bàn</button>
             <button onclick="openCancelOrderModal()">Hủy bàn</button>
-            <button onclick="reserveTable()">Đặt bàn</button>
+            <button onclick="openReserveTableModal()">Đặt bàn</button>
         </div>
 
         <div class="order-buttons">
@@ -189,6 +189,33 @@
             </div>
         </div>
     </main>
+
+    <!--  Form đặt ban trước  -->
+    <div id="reserveTableModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('reserveTableModal')">&times;</span>
+            <h4 id="reserveModalTitle">Đặt bàn X</h4>
+
+            <div class="form-grid">
+                <label for="customerName">Khách hàng:</label>
+                <input type="text" id="customerName" placeholder="Nhập tên khách hàng"/>
+
+                <label for="customerPhone">SĐT:</label>
+                <input type="text" id="customerPhone" placeholder="Nhập số điện thoại (tùy chọn)"/>
+
+                <label for="reservationDate">Ngày:</label>
+                <input type="date" id="reservationDate" />
+
+                <label for="reservationTime">Giờ:</label>
+                <input type="time" id="reservationTime" />
+            </div>
+
+            <div class="modal-actions">
+                <button onclick="confirmReservation()">Đặt bàn</button>
+                <button onclick="closeModal('reserveTableModal')">Hủy</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -769,7 +796,94 @@
             });
     }
 
-    function reserveTable() { console.log('Đặt bàn:', selectedTableId); }
+    // --- HÀM MỚI ĐỂ MỞ MODAL ĐẶT BÀN ---
+    function openReserveTableModal() {
+        if (!selectedTableId) {
+            alert('Vui lòng chọn bàn muốn đặt.');
+            return;
+        }
+        // Kiểm tra xem bàn có trống không
+        const selectedTableElement = document.querySelector(`.table-item[data-maban="${selectedTableId}"]`);
+        if (selectedTableElement && !selectedTableElement.classList.contains('status-trong')) {
+            alert('Chỉ có thể đặt bàn trống.');
+            return;
+        }
+
+        console.log('Mở modal đặt bàn:', selectedTableId);
+        document.getElementById('reserveModalTitle').textContent = `Đặt ${selectedTableName}`;
+
+        // Reset form
+        document.getElementById('customerName').value = '';
+        document.getElementById('customerPhone').value = '';
+
+        // Set ngày giờ hiện tại làm mặc định
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Tháng từ 0-11
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+
+        document.getElementById('reservationDate').value = `${year}-${month}-${day}`;
+        document.getElementById('reservationTime').value = `${hours}:${minutes}`;
+
+
+        openModal('reserveTableModal');
+    }
+
+    // --- HÀM MỚI ĐỂ XÁC NHẬN ĐẶT BÀN ---
+    function confirmReservation() {
+        const customerName = document.getElementById('customerName').value.trim();
+        const customerPhone = document.getElementById('customerPhone').value.trim();
+        const reservationDate = document.getElementById('reservationDate').value;
+        const reservationTime = document.getElementById('reservationTime').value;
+
+        if (!customerName) {
+            alert('Vui lòng nhập tên khách hàng.');
+            return;
+        }
+        if (!reservationDate || !reservationTime) {
+            alert('Vui lòng chọn ngày và giờ đặt.');
+            return;
+        }
+
+        // Kết hợp ngày và giờ thành LocalDateTime string (ISO 8601 format)
+        const reservationDateTime = `${reservationDate}T${reservationTime}:00`;
+
+        console.log(`Xác nhận đặt bàn ${selectedTableId} cho ${customerName} lúc ${reservationDateTime}`);
+
+        // Gọi API backend
+        fetch('/sales/reserve-table', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')]: document.querySelector('meta[name="_csrf"]')?.getAttribute('content')
+            },
+            body: JSON.stringify({
+                maBan: selectedTableId,
+                tenKhachHang: customerName,
+                sdtKhachHang: customerPhone,
+                ngayGioDat: reservationDateTime // Gửi dạng ISO string
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text || 'Đặt bàn thất bại.') });
+                }
+                return response.json(); // Hoặc text()
+            })
+            .then(data => {
+                console.log('Đặt bàn thành công:', data);
+                closeModal('reserveTableModal');
+                alert('Đặt bàn thành công!');
+                window.location.reload(); // Tải lại trang
+            })
+            .catch(error => {
+                console.error('Lỗi khi đặt bàn:', error);
+                alert(`Lỗi: ${error.message}`);
+            });
+    }
+
     function selectMenu() { console.log('Chọn thực đơn cho bàn:', selectedTableId); }
     function processPayment() { console.log('Thanh toán cho bàn:', selectedTableId); }
     function printBill() { console.log('In hóa đơn cho bàn:', selectedTableId); }
@@ -781,11 +895,13 @@
         const mergeModal = document.getElementById('mergeTableModal');
         const splitModal = document.getElementById('splitTableModal'); // Thêm
         const cancelModal = document.getElementById('cancelOrderModal'); // Thêm
+        const reserveModal = document.getElementById('reserveTableModal'); // Thêm
         if (event.target == viewModal) closeModal('viewTableModal');
         if (event.target == moveModal) closeModal('moveTableModal');
         if (event.target == mergeModal) closeModal('mergeTableModal');
         if (event.target == splitModal) closeModal('splitTableModal'); // Thêm
         if (event.target == cancelModal) closeModal('cancelOrderModal'); // Thêm
+        if (event.target == reserveModal) closeModal('reserveTableModal'); // Thêm
     }
 </script>
 </body>

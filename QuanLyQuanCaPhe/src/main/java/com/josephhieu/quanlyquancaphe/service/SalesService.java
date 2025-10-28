@@ -1,13 +1,12 @@
 package com.josephhieu.quanlyquancaphe.service;
 
-import com.josephhieu.quanlyquancaphe.dto.SplitTableRequestDTO;
+import com.josephhieu.quanlyquancaphe.dto.*;
 import com.josephhieu.quanlyquancaphe.entity.id.ChiTietDatBanId;
 import com.josephhieu.quanlyquancaphe.entity.id.ChiTietHoaDonId;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.josephhieu.quanlyquancaphe.dto.OrderItemDTO;
-import com.josephhieu.quanlyquancaphe.dto.ReservationInfoDTO;
-import com.josephhieu.quanlyquancaphe.dto.TableDetailsDTO;
 import com.josephhieu.quanlyquancaphe.entity.*;
 import com.josephhieu.quanlyquancaphe.repository.*;
 import com.josephhieu.quanlyquancaphe.exception.NotFoundException;
@@ -34,6 +33,71 @@ public class SalesService {
 
     @Autowired
     private ChiTietHoaDonRepository chiTietHoaDonRepository;
+
+    @Autowired
+    private NhanVienRepository nhanVienRepository;
+
+    /**
+     * PHƯƠNG THỨC MỚI: Xử lý đặt bàn
+     */
+    @Transactional
+    public void reserveTable(ReserveTableRequestDTO request) {
+        // 1. Validation bàn
+        Ban ban = banRepository.findById(request.getMaBan())
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bàn: " + request.getMaBan()));
+        if (!"Trống".equalsIgnoreCase(ban.getTinhTrang())) {
+            throw new IllegalArgumentException("Chỉ có thể đặt bàn trống.");
+        }
+        if (request.getTenKhachHang() == null || request.getTenKhachHang().trim().isEmpty()) {
+            throw new IllegalArgumentException("Tên khách hàng là bắt buộc.");
+        }
+        if (request.getNgayGioDat() == null) {
+            throw new IllegalArgumentException("Ngày giờ đặt là bắt buộc.");
+        }
+        // Có thể thêm validation thời gian đặt phải trong tương lai
+
+        // 2. Lấy thông tin nhân viên đang đăng nhập
+        // Cách này lấy UserDetails, cần tìm NhanVien tương ứng
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String tenDangNhapNhanVien;
+        if (principal instanceof UserDetails) {
+            tenDangNhapNhanVien = ((UserDetails) principal).getUsername();
+        } else {
+            tenDangNhapNhanVien = principal.toString(); // Hoặc xử lý khác nếu không phải UserDetails
+        }
+        NhanVien nhanVien = nhanVienRepository.findByTaiKhoan_TenDangNhap(tenDangNhapNhanVien)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin nhân viên đang đăng nhập."));
+
+
+        // 3. Tạo Hóa đơn MỚI (chưa có món, chưa thanh toán)
+        HoaDon hoaDon = new HoaDon();
+        hoaDon.setNgayGioTao(LocalDateTime.now()); // Thời gian tạo hóa đơn
+        hoaDon.setTrangThai(false); // Chưa thanh toán
+        hoaDon.setTongTien(BigDecimal.ZERO); // Tổng tiền ban đầu là 0
+        hoaDon = hoaDonRepository.save(hoaDon);
+
+        // 4. Tạo ChiTietDatBan MỚI
+        ChiTietDatBanId bookingId = new ChiTietDatBanId();
+        bookingId.setMaBan(ban.getMaBan());
+        bookingId.setMaNhanVien(nhanVien.getMaNhanVien());
+        bookingId.setMaHoaDon(hoaDon.getMaHoaDon());
+
+        ChiTietDatBan booking = new ChiTietDatBan();
+        booking.setId(bookingId);
+        booking.setBan(ban);
+        booking.setNhanVien(nhanVien);
+        booking.setHoaDon(hoaDon);
+        booking.setTenKhachHang(request.getTenKhachHang());
+        booking.setSdtKhachHang(request.getSdtKhachHang());
+        booking.setNgayGioDat(request.getNgayGioDat()); // Thời gian khách hẹn đến
+        chiTietDatBanRepository.save(booking);
+
+        // 5. Cập nhật trạng thái bàn thành "Đặt trước"
+        ban.setTinhTrang("Đặt trước");
+        banRepository.save(ban);
+
+        System.out.println("Đã đặt thành công bàn " + ban.getTenBan() + " cho " + request.getTenKhachHang());
+    }
 
     /**
      * PHƯƠNG THỨC MỚI: Xử lý hủy bàn/đơn hàng

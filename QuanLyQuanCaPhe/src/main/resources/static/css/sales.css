@@ -138,3 +138,23 @@
 #cancelOrderModal .modal-content { max-width: 400px; text-align: center;} /* Nhỏ hơn, căn giữa */
 #cancelOrderModal p { margin-bottom: 20px; font-size: 1.1em; }
 #cancelOrderModal .modal-actions button { margin: 0 10px; } /* Khoảng cách nút */
+
+/* === CSS MỚI CHO MODAL ĐẶT BÀN === */
+#reserveTableModal .modal-content { max-width: 550px; }
+#reserveTableModal .form-grid {
+    display: grid;
+    grid-template-columns: 100px 1fr; /* Cột nhãn và cột input */
+    gap: 15px;
+    align-items: center; /* Căn giữa theo chiều dọc */
+    margin-bottom: 20px;
+}
+#reserveTableModal label { text-align: right; font-weight: bold; }
+#reserveTableModal input[type="text"],
+#reserveTableModal input[type="date"],
+#reserveTableModal input[type="time"] {
+    width: 95%; /* Chiếm gần hết cột */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+#reserveTableModal .modal-actions button { margin-left: 10px; }

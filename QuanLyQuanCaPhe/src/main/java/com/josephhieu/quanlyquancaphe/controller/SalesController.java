@@ -131,4 +131,25 @@ public class SalesController {
             return ResponseEntity.internalServerError().body("Lỗi hệ thống khi hủy bàn.");
         }
     }
+
+    /**
+     * Endpoint MỚI: Xử lý yêu cầu đặt bàn
+     * URL: /sales/reserve-table (POST)
+     */
+    @PostMapping("/sales/reserve-table")
+    @ResponseBody
+    public ResponseEntity<?> reserveTable(@RequestBody ReserveTableRequestDTO request) {
+        try {
+            salesService.reserveTable(request);
+            // Trả về 200 OK
+            return ResponseEntity.ok().body("{\"message\": \"Đặt bàn thành công!\"}");
+        } catch (NotFoundException | IllegalArgumentException e) {
+            // Trả về 400 Bad Request
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Trả về 500 Internal Server Error
+            return ResponseEntity.internalServerError().body("Lỗi hệ thống khi đặt bàn.");
+        }
+    }
 }
