@@ -1,5 +1,6 @@
 package com.josephhieu.quanlyquancaphe.controller;
 
+import com.josephhieu.quanlyquancaphe.dto.MoveTableRequestDTO;
 import com.josephhieu.quanlyquancaphe.dto.TableDetailsDTO;
 import com.josephhieu.quanlyquancaphe.entity.Ban;
 import com.josephhieu.quanlyquancaphe.exception.NotFoundException;
@@ -9,9 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -49,6 +48,24 @@ public class SalesController {
             // Log lỗi ra console
             e.printStackTrace();
             return ResponseEntity.internalServerError().build(); // Trả về 500 Internal Server Error
+        }
+    }
+
+    /**
+     * Endpoint xử lý yêu cầu chuyển bàn
+     * URL: /sales/move-table (POST)
+     */
+    @PostMapping("/sales/move-table") // *** ĐẢM BẢO DÒNG NÀY ĐÚNG ***
+    @ResponseBody // Trả về JSON/text
+    public ResponseEntity<?> moveTable(@RequestBody MoveTableRequestDTO request) {
+        try {
+            salesService.moveTable(request.getSourceTableId(), request.getDestinationTableId());
+            return ResponseEntity.ok().body("{\"message\": \"Chuyển bàn thành công!\"}");
+        } catch (NotFoundException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Lỗi hệ thống khi chuyển bàn.");
         }
     }
 }

@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <title>Quản lý Bán hàng</title>
     <link rel="stylesheet" th:href="@{/css/layout.css}" />
+
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+
     <style>
         .main-content { background-color: #fff; /* Nền trắng cho khu vực chính */ }
         .table-grid {
@@ -29,11 +33,11 @@
             justify-content: center;
             align-items: center;
         }
-        /* Định dạng màu nền dựa trên trạng thái */
-        .table-item.status-trong { background-color: #e9ecef; color: #495057; } /* Xám nhạt - Trống */
-        .table-item.status-co-khach { background-color: #ced4da; color: #212529; } /* Xám đậm - Có khách */
-        .table-item.status-dat-truoc { background-color: #fff3cd; color: #856404; } /* Vàng nhạt - Đặt trước */
-        /* Thêm hiệu ứng khi chọn */
+
+        .table-item.status-trong { background-color: #e9ecef; color: #495057; }
+        .table-item.status-cokhach { background-color: #ced4da; color: #212529; }
+        .table-item.status-dattruoc { background-color: #fff3cd; color: #856404; }
+
         .table-item.selected {
             border-color: #007bff;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
@@ -100,6 +104,16 @@
         .modal .reservation-info { margin-bottom: 20px; padding: 10px; border: 1px dashed #ccc; background-color: #f9f9f9; }
         .modal .modal-actions { text-align: right; }
         .modal .modal-actions button { padding: 8px 15px; cursor: pointer; }
+
+        /* CSS specific to move table modal */
+        #moveTableModal select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -116,11 +130,10 @@
 
         <div class="table-grid" id="tableGrid">
             <div th:each="ban : ${dsBan}"
-                 th:classappend="'table-item status-' + ${#strings.toLowerCase(ban.tinhTrang)}"
-
+                 th:classappend="'table-item status-' + ${ban.tinhTrang == 'Trống' ? 'trong' : (ban.tinhTrang == 'Có khách' ? 'cokhach' : (ban.tinhTrang == 'Đặt trước' ? 'dattruoc' : 'unknown'))}"
                  th:attr="data-maban=${ban.maBan}, data-tenban=${ban.tenBan}"
-
                  onclick="selectTable(this)">
+
                 <span th:text="${ban.tenBan}">Bàn 01</span>
                 <small th:if="${ban.tinhTrang != 'Trống'}" th:text="'&lt;' + ${ban.tinhTrang} + '&gt;'">Trạng thái</small>
             </div>
@@ -128,7 +141,7 @@
 
         <div class="action-buttons">
             <button onclick="viewTable()">Xem bàn</button>
-            <button onclick="moveTable()">Chuyển bàn</button>
+            <button onclick="openMoveTableModal()">Chuyển bàn</button>
             <button onclick="splitTable()">Tách bàn</button>
             <button onclick="mergeTable()">Gộp bàn</button>
             <button onclick="cancelOrder()">Hủy bàn</button>
@@ -171,12 +184,57 @@
             </div>
         </div>
 
+        <div id="moveTableModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal('moveTableModal')">&times;</span>
+                <h4 id="moveModalTitle">Chuyển bàn X</h4>
+
+                <label for="destinationTableSelect">Chọn bàn cần chuyển đến:</label>
+                <select id="destinationTableSelect">
+                    <option value="">-- Chọn bàn trống --</option>
+                </select>
+
+                <div class="modal-actions">
+                    <button onclick="confirmMoveTable()">Chuyển</button>
+                    <button onclick="closeModal('moveTableModal')">Hủy</button>
+                </div>
+            </div>
+        </div>
     </main>
 </div>
 
 <script>
     let selectedTableId = null;
     let selectedTableName = null;
+    let allTablesData = []; // Lưu trữ dữ liệu tất cả bàn để lọc
+
+    // Lưu dữ liệu bàn khi trang load (nếu cần lấy bàn trống từ dữ liệu đã có)
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.table-item').forEach(item => {
+            const maban = item.getAttribute('data-maban');
+            const tenban = item.getAttribute('data-tenban');
+            const classes = item.classList; // Lấy danh sách class
+            console.log(`Bàn ${tenban} - Classes:`, classes); // In ra classList
+
+            // Logic lấy status
+            let currentStatus = 'Unknown'; // Trạng thái mặc định
+            if (classes.contains('status-trong')) { // Không dấu
+                currentStatus = 'Trống'; // Giữ giá trị 'Trống' để lọc
+            } else if (classes.contains('status-cokhach')) { // Không dấu, liền mạch
+                currentStatus = 'Có khách';
+            } else if (classes.contains('status-dattruoc')) { // Không dấu, liền mạch
+                currentStatus = 'Đặt trước';
+            }
+            console.log(`Bàn ${tenban} - Determined Status:`, currentStatus); // In ra status đã xác định
+
+            allTablesData.push({
+                id: maban,
+                name: tenban,
+                status: currentStatus // Sử dụng status đã xác định
+            });
+        });
+        console.log('--- Dữ liệu tất cả bàn:', allTablesData);
+    });
 
     function selectTable(element) {
         // Bỏ chọn tất cả các bàn khác
@@ -254,7 +312,94 @@
                 alert('Đã xảy ra lỗi khi lấy thông tin bàn.');
             });
     }
-    function moveTable() { console.log('Chuyển bàn:', selectedTableId); }
+
+    // --- HÀM ĐỂ MỞ MODAL CHUYỂN BÀN ---
+    function openMoveTableModal() {
+        if (!selectedTableId) {
+            alert('Vui lòng chọn bàn muốn chuyển đi.');
+            return;
+        }
+        // Kiểm tra bàn đang chọn có phải bàn trống không
+        const selectedTableElement = document.querySelector(`.table-item[data-maban="${selectedTableId}"]`);
+        if (selectedTableElement && selectedTableElement.classList.contains('status-trong')) {
+            alert('Không thể chuyển từ bàn trống.');
+            return;
+        }
+
+
+        console.log('Mở modal chuyển bàn:', selectedTableId);
+        document.getElementById('moveModalTitle').textContent = `Chuyển ${selectedTableName}`;
+
+        // Lấy danh sách bàn trống (trừ bàn đang chọn)
+        const destinationSelect = document.getElementById('destinationTableSelect');
+        destinationSelect.innerHTML = '<option value="">-- Chọn bàn trống --</option>'; // Reset dropdown
+
+        // Lọc từ dữ liệu đã lưu hoặc gọi API mới /sales/available-tables
+        const availableTables = allTablesData.filter(table => table.status === 'Trống');
+
+        availableTables.forEach(table => {
+            const option = document.createElement('option');
+            option.value = table.id;
+            option.textContent = table.name;
+            destinationSelect.appendChild(option);
+        });
+
+        openModal('moveTableModal');
+    }
+
+    // --- HÀM ĐỂ XÁC NHẬN CHUYỂN BÀN ---
+    function confirmMoveTable() {
+        const destinationTableId = document.getElementById('destinationTableSelect').value;
+
+        if (!destinationTableId) {
+            alert('Vui lòng chọn bàn muốn chuyển đến.');
+            return;
+        }
+
+        if (selectedTableId === destinationTableId) {
+            alert('Bàn nguồn và bàn đích không thể giống nhau.');
+            return;
+        }
+
+        console.log(`Xác nhận chuyển từ ${selectedTableId} sang ${destinationTableId}`);
+
+        // --- LẤY CSRF TOKEN TỪ META TAGS ---
+        const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+        // Gọi API backend để thực hiện chuyển bàn
+        fetch('/sales/move-table', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [header]: token // Sử dụng tên header và giá trị token đã lấy
+            },
+            body: JSON.stringify({
+                sourceTableId: selectedTableId,
+                destinationTableId: destinationTableId
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    // Xử lý lỗi từ server (ví dụ: hiển thị thông báo)
+                    return response.text().then(text => { throw new Error(text || 'Chuyển bàn thất bại.') });
+                }
+                return response.json(); // Hoặc response.text() nếu backend không trả về JSON
+            })
+            .then(data => {
+                console.log('Chuyển bàn thành công:', data);
+                closeModal('moveTableModal');
+                alert('Chuyển bàn thành công!');
+                // Cập nhật lại giao diện lưới bàn (Cách đơn giản nhất là tải lại trang)
+                window.location.reload();
+                // Hoặc bạn có thể cập nhật DOM trực tiếp bằng JavaScript phức tạp hơn
+            })
+            .catch(error => {
+                console.error('Lỗi khi chuyển bàn:', error);
+                alert(`Lỗi: ${error.message}`);
+            });
+    }
+
     function splitTable() { console.log('Tách bàn:', selectedTableId); }
     function mergeTable() { console.log('Gộp bàn:', selectedTableId); }
     function cancelOrder() { console.log('Hủy bàn:', selectedTableId); }
@@ -264,11 +409,11 @@
     function printBill() { console.log('In hóa đơn cho bàn:', selectedTableId); }
 
     // Đóng modal khi click ra ngoài
-    window.onclick = function(event) {
-        const modal = document.getElementById('viewTableModal');
-        if (event.target == modal) {
-            closeModal('viewTableModal');
-        }
+    window.onclick = function(event) { // Đóng cả 2 modal khi click ra ngoài
+        const viewModal = document.getElementById('viewTableModal');
+        const moveModal = document.getElementById('moveTableModal');
+        if (event.target == viewModal) closeModal('viewTableModal');
+        if (event.target == moveModal) closeModal('moveTableModal');
     }
 </script>
 </body>
