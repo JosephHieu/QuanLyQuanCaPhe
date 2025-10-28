@@ -9,15 +9,16 @@ import org.springframework.stereotype.Service;
 
 import com.josephhieu.quanlyquancaphe.entity.*;
 import com.josephhieu.quanlyquancaphe.repository.*;
+import com.josephhieu.quanlyquancaphe.dto.AddItemRequestDTO;
 import com.josephhieu.quanlyquancaphe.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.function.Function;
 
 @Service
 public class SalesService {
@@ -36,6 +37,129 @@ public class SalesService {
 
     @Autowired
     private NhanVienRepository nhanVienRepository;
+
+    @Autowired
+    private ThucDonRepository thucDonRepository;
+
+    /**
+     * PHƯƠNG THỨC MỚI: Cập nhật toàn bộ đơn hàng cho bàn
+     */
+    @Transactional
+    public void updateOrder(String maBan, List<AddItemRequestDTO.ItemToAddDTO> updatedItemsDto) {
+        // 1. Tìm bàn và hóa đơn hoạt động
+        Ban ban = banRepository.findById(maBan)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bàn: " + maBan));
+        ChiTietDatBan booking = chiTietDatBanRepository.findByBanMaBanAndHoaDonTrangThai(maBan, false)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đặt bàn/hóa đơn hoạt động cho bàn này.")); // Cần logic tạo mới nếu bàn trống
+        HoaDon hoaDon = booking.getHoaDon();
+
+        // 2. Lấy danh sách ChiTietHoaDon HIỆN TẠI của hóa đơn
+        List<ChiTietHoaDon> existingDetails = chiTietHoaDonRepository.findByHoaDonMaHoaDon(hoaDon.getMaHoaDon());
+        // Chuyển thành Map để dễ truy cập: Key = MaThucDon, Value = ChiTietHoaDon
+        Map<String, ChiTietHoaDon> existingDetailsMap = existingDetails.stream()
+                .collect(Collectors.toMap(detail -> detail.getId().getMaThucDon(), Function.identity()));
+
+        List<ChiTietHoaDon> detailsToSave = new ArrayList<>(); // Lưu các chi tiết cần save/update
+        List<ChiTietHoaDon> detailsToDelete = new ArrayList<>(); // Lưu các chi tiết cần delete
+        BigDecimal newTotalAmount = BigDecimal.ZERO; // Tính lại tổng tiền từ đầu
+
+        // 3. Xử lý danh sách món MỚI từ request
+        for (AddItemRequestDTO.ItemToAddDTO newItemDto : updatedItemsDto) {
+            String maThucDon = newItemDto.getMaThucDon();
+            int newQuantity = newItemDto.getSoLuong();
+
+            if (newQuantity < 0) continue; // Bỏ qua số lượng âm
+
+            ThucDon thucDon = thucDonRepository.findById(maThucDon)
+                    .orElseThrow(() -> new NotFoundException("Không tìm thấy món ăn: " + maThucDon));
+            BigDecimal giaBan = thucDon.getGiaTienHienTai();
+
+            // Kiểm tra xem món này đã có trong hóa đơn cũ chưa (dùng Map)
+            ChiTietHoaDon existingDetail = existingDetailsMap.get(maThucDon);
+
+            if (existingDetail != null) {
+                // Món đã tồn tại
+                if (newQuantity > 0) {
+                    // Cập nhật số lượng và thành tiền
+                    existingDetail.setSoLuong(newQuantity);
+                    existingDetail.setThanhTien(giaBan.multiply(BigDecimal.valueOf(newQuantity)));
+                    detailsToSave.add(existingDetail); // Đánh dấu cần update
+                    newTotalAmount = newTotalAmount.add(existingDetail.getThanhTien()); // Cộng vào tổng mới
+                } else {
+                    // Số lượng mới là 0 -> Đánh dấu cần xóa
+                    detailsToDelete.add(existingDetail);
+                }
+                // Xóa khỏi map để lát nữa biết món nào cần xóa hẳn
+                existingDetailsMap.remove(maThucDon);
+            } else {
+                // Món mới hoàn toàn (chưa có trong hóa đơn cũ)
+                if (newQuantity > 0) {
+                    ChiTietHoaDon newDetail = new ChiTietHoaDon();
+                    ChiTietHoaDonId newId = new ChiTietHoaDonId();
+                    newId.setMaHoaDon(hoaDon.getMaHoaDon());
+                    newId.setMaThucDon(maThucDon);
+
+                    newDetail.setId(newId);
+                    newDetail.setHoaDon(hoaDon);
+                    newDetail.setThucDon(thucDon);
+                    newDetail.setSoLuong(newQuantity);
+                    newDetail.setGiaTaiThoiDiemBan(giaBan);
+                    newDetail.setThanhTien(giaBan.multiply(BigDecimal.valueOf(newQuantity)));
+                    detailsToSave.add(newDetail); // Đánh dấu cần add
+                    newTotalAmount = newTotalAmount.add(newDetail.getThanhTien()); // Cộng vào tổng mới
+                }
+                // Nếu newQuantity = 0 thì không làm gì cả
+            }
+        } // Kết thúc vòng lặp món mới
+
+        // 4. Những món còn lại trong existingDetailsMap là những món bị xóa (không có trong list mới)
+        detailsToDelete.addAll(existingDetailsMap.values());
+
+        // 5. Thực hiện lưu và xóa
+        if (!detailsToSave.isEmpty()) {
+            chiTietHoaDonRepository.saveAll(detailsToSave);
+        }
+        if (!detailsToDelete.isEmpty()) {
+            chiTietHoaDonRepository.deleteAll(detailsToDelete);
+        }
+
+        // 6. Cập nhật tổng tiền hóa đơn
+        hoaDon.setTongTien(newTotalAmount);
+        hoaDonRepository.save(hoaDon);
+
+        // 7. Cập nhật trạng thái bàn (nếu cần)
+        boolean hasItemsNow = !detailsToSave.isEmpty() || !remainingItemsAfterDelete(detailsToSave, detailsToDelete, existingDetails);
+
+        if ("Trống".equalsIgnoreCase(ban.getTinhTrang()) && hasItemsNow) {
+            ban.setTinhTrang("Có khách"); // Chuyển thành có khách nếu trước đó trống và giờ có món
+            banRepository.save(ban);
+        } else if (!"Trống".equalsIgnoreCase(ban.getTinhTrang()) && !hasItemsNow) {
+            // Nếu bàn đang có khách/đặt trước mà giờ hết món -> Chuyển thành trống? Hay giữ đặt trước?
+            // Tùy logic: Ở đây chuyển về Trống nếu hết món
+            ban.setTinhTrang("Trống");
+            banRepository.save(ban);
+            // Có thể cần xóa cả ChiTietDatBan nếu về trống?
+            // chiTietDatBanRepository.delete(booking);
+        } else if ("Đặt trước".equalsIgnoreCase(ban.getTinhTrang()) && hasItemsNow) {
+            // Nếu là bàn đặt trước và bắt đầu gọi món -> chuyển thành Có khách
+            ban.setTinhTrang("Có khách");
+            banRepository.save(ban);
+        }
+
+
+        System.out.println("Đã cập nhật đơn hàng cho bàn " + ban.getTenBan());
+    }
+
+    // Hàm helper để kiểm tra xem còn món nào sau khi xóa không
+    private boolean remainingItemsAfterDelete(List<ChiTietHoaDon> toSave, List<ChiTietHoaDon> toDelete, List<ChiTietHoaDon> existing) {
+        Map<String, ChiTietHoaDon> finalItems = existing.stream()
+                .filter(d -> !toDelete.contains(d)) // Loại bỏ những cái bị xóa
+                .collect(Collectors.toMap(d -> d.getId().getMaThucDon(), Function.identity()));
+        // Thêm hoặc cập nhật những cái được save
+        toSave.forEach(d -> finalItems.put(d.getId().getMaThucDon(), d));
+        // Kiểm tra xem có món nào số lượng > 0 không
+        return finalItems.values().stream().anyMatch(d -> d.getSoLuong() > 0);
+    }
 
     /**
      * PHƯƠNG THỨC MỚI: Xử lý đặt bàn

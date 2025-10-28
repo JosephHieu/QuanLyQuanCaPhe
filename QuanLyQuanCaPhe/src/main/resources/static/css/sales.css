@@ -158,3 +158,8 @@
     border-radius: 4px;
 }
 #reserveTableModal .modal-actions button { margin-left: 10px; }
+
+/* ... (CSS cũ của bạn, bao gồm CSS cho #selectMenuModal) ... */
+#selectMenuModal #menuItemList input[type="number"] { width: 60px; text-align: center; }
+#selectMenuModal #selectedItemsList { display: none; } /* Không cần hiển thị list riêng nữa */
+#selectMenuModal .modal-actions button { margin-left: 10px; }

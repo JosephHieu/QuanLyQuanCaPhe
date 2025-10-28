@@ -43,7 +43,7 @@
         </div>
 
         <div class="order-buttons">
-            <button onclick="selectMenu()">Chọn thực đơn.....</button>
+            <button onclick="openSelectMenuModal()">Chọn thực đơn.....</button>
             <button onclick="processPayment()">Thanh toán.....</button>
             <button onclick="printBill()">In ấn.....</button>
         </div>
@@ -188,6 +188,32 @@
                 </div>
             </div>
         </div>
+
+        <div id="selectMenuModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal('selectMenuModal')">&times;</span>
+                <h4 id="selectMenuTitle">Chọn/Sửa món cho bàn X</h4>
+
+                <div id="menuItemList">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Tên món</th>
+                            <th>Giá</th>
+                            <th>Số lượng</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr><td colspan="3">Đang tải...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="modal-actions">
+                    <button onclick="confirmUpdateOrder()">Lưu</button> <button onclick="closeModal('selectMenuModal')">Hủy</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!--  Form đặt ban trước  -->
@@ -223,6 +249,8 @@
     let selectedTableName = null;
     let allTablesData = []; // Lưu trữ dữ liệu tất cả bàn để lọc
     let itemsToSplit = {}; // Lưu trữ món đang chọn để tách { maThucDon: { tenMon: '...', soLuongHienTai: X, soLuongTach: Y } }
+    let currentOrderItems = {}; // Lưu trữ món hiện tại của bàn { maThucDon: soLuong }
+    let fullMenu = [];
 
     // Lưu dữ liệu bàn khi trang load (nếu cần lấy bàn trống từ dữ liệu đã có)
     document.addEventListener('DOMContentLoaded', () => {
@@ -248,6 +276,23 @@
                 name: tenban,
                 status: currentStatus // Sử dụng status đã xác định
             });
+
+            fetch('/menu')
+                .then(response => {
+                    if (!response.ok) { // Thêm kiểm tra lỗi response
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    fullMenu = data;
+                    console.log('--- Đã tải thực đơn thành công:', fullMenu); // Kiểm tra dữ liệu ở đây
+                })
+                .catch(error => {
+                    // Lỗi xảy ra ở đây sẽ khiến fullMenu không có dữ liệu
+                    console.error('--- Lỗi khi tải thực đơn:', error);
+                    alert('Không thể tải thực đơn. Vui lòng thử lại.');
+                });
         });
         console.log('--- Dữ liệu tất cả bàn:', allTablesData);
     });
@@ -884,7 +929,133 @@
             });
     }
 
-    function selectMenu() { console.log('Chọn thực đơn cho bàn:', selectedTableId); }
+    // --- CẬP NHẬT HÀM MỞ MODAL CHỌN MÓN ---
+    function openSelectMenuModal() {
+        if (!selectedTableId) {
+            alert('Vui lòng chọn một bàn.');
+            return;
+        }
+
+
+        if (!fullMenu || fullMenu.length === 0) {
+            console.error('Thực đơn chưa được tải hoặc bị rỗng.');
+            alert('Chưa tải được thực đơn. Vui lòng đợi hoặc thử tải lại trang.');
+            return; // Dừng lại nếu chưa có menu
+        }
+
+        // Không cho chọn món cho bàn trống (trừ khi muốn bắt đầu order mới - logic này đã có)
+        const selectedTableElement = document.querySelector(`.table-item[data-maban="${selectedTableId}"]`);
+        if (selectedTableElement && selectedTableElement.classList.contains('status-trong')) {
+            alert('Không thể chọn thực đơn cho bàn trống. Vui lòng đặt bàn trước hoặc chọn bàn đang có khách.');
+            return; // Dừng hàm nếu bàn trống
+        }
+
+        console.log('Mở modal chọn/sửa món cho bàn:', selectedTableId);
+        document.getElementById('selectMenuTitle').textContent = `Chọn/Sửa món cho ${selectedTableName}`;
+        currentOrderItems = {}; // Reset món hiện tại
+
+        const menuTableBody = document.getElementById('menuItemList').querySelector('tbody');
+        menuTableBody.innerHTML = '<tr><td colspan="3">Đang tải danh sách món và đơn hàng hiện tại...</td></tr>';
+
+        // Bước 1: Gọi API lấy đơn hàng hiện tại của bàn
+        fetch(`/sales/table/${selectedTableId}`)
+            .then(response => response.ok ? response.json() : Promise.reject('Lỗi lấy đơn hàng hiện tại'))
+            .then(tableData => {
+                // Lưu lại các món đã gọi
+                if (tableData.orderedItems) {
+                    tableData.orderedItems.forEach(item => {
+                        currentOrderItems[item.maThucDon] = item.soLuong;
+                    });
+                }
+                console.log('Món hiện tại của bàn:', currentOrderItems);
+
+                // Bước 2: Hiển thị toàn bộ thực đơn và điền số lượng cũ
+                menuTableBody.innerHTML = ''; // Xóa loading
+                if (!fullMenu || fullMenu.length === 0) {
+                    menuTableBody.innerHTML = '<tr><td colspan="3">Không tải được thực đơn.</td></tr>';
+                    return;
+                }
+
+                fullMenu.forEach(item => {
+                    const row = menuTableBody.insertRow();
+                    row.insertCell(0).textContent = item.tenMon;
+                    row.insertCell(1).textContent = item.giaTienHienTai.toLocaleString('vi-VN') + ' đ';
+                    const quantityCell = row.insertCell(2);
+                    const quantityInput = document.createElement('input');
+                    quantityInput.type = 'number';
+                    quantityInput.min = '0';
+                    // Điền số lượng hiện tại nếu có, nếu không thì là 0
+                    quantityInput.value = currentOrderItems[item.maThucDon] || '0';
+                    quantityInput.dataset.maThucDon = item.maThucDon;
+                    // quantityInput.onchange = updateSelectedItems; // Không cần update list riêng nữa
+                    quantityCell.appendChild(quantityInput);
+                });
+                openModal('selectMenuModal');
+            })
+            .catch(error => {
+                console.error('Lỗi khi mở modal chọn món:', error);
+                alert('Không thể tải thông tin món ăn hoặc đơn hàng hiện tại.');
+            });
+    }
+
+    // --- HÀM MỚI ĐỂ XÁC NHẬN CẬP NHẬT ORDER ---
+    function confirmUpdateOrder() {
+        const itemsToSend = [];
+        const inputs = document.getElementById('menuItemList').querySelectorAll('input[type="number"]');
+
+        // Lấy tất cả món và số lượng từ các ô input
+        inputs.forEach(input => {
+            const maThucDon = input.dataset.maThucDon;
+            const soLuong = parseInt(input.value) || 0;
+            // Chỉ gửi những món có số lượng >= 0 (bao gồm cả 0 để xóa)
+            // Hoặc chỉ gửi món có số lượng > 0 tùy logic backend
+            // Hiện tại: Gửi tất cả món có input >= 0
+            if (soLuong >= 0 && maThucDon) {
+                itemsToSend.push({ maThucDon: maThucDon, soLuong: soLuong });
+            }
+
+        });
+
+        // Có thể bỏ qua kiểm tra này nếu cho phép lưu order rỗng (để hủy bàn)
+        // if (itemsToSend.every(item => item.soLuong === 0)) {
+        //     if (!confirm('Bạn chưa chọn món nào hoặc đặt số lượng về 0. Bạn muốn xóa hết món trên bàn này?')) {
+        //         return;
+        //     }
+        // }
+
+
+        console.log('Xác nhận cập nhật order:', itemsToSend, 'cho bàn:', selectedTableId);
+
+        // Gọi API backend (tạo endpoint mới)
+        fetch('/sales/update-order', { // Dùng endpoint mới
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')]: document.querySelector('meta[name="_csrf"]')?.getAttribute('content')
+            },
+            body: JSON.stringify({
+                maBan: selectedTableId,
+                items: itemsToSend // Gửi toàn bộ danh sách mới { maBan: "id", items: [ {maThucDon: "id1", soLuong: 2}, {maThucDon: "id2", soLuong: 0}, ... ] }
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text || 'Cập nhật đơn hàng thất bại.') });
+                }
+                return response.json(); // Hoặc text()
+            })
+            .then(data => {
+                console.log('Cập nhật đơn hàng thành công:', data);
+                closeModal('selectMenuModal');
+                alert('Cập nhật đơn hàng thành công!');
+                window.location.reload(); // Tải lại trang
+            })
+            .catch(error => {
+                console.error('Lỗi khi cập nhật đơn hàng:', error);
+                alert(`Lỗi: ${error.message}`);
+            });
+    }
+
     function processPayment() { console.log('Thanh toán cho bàn:', selectedTableId); }
     function printBill() { console.log('In hóa đơn cho bàn:', selectedTableId); }
 
@@ -896,12 +1067,15 @@
         const splitModal = document.getElementById('splitTableModal'); // Thêm
         const cancelModal = document.getElementById('cancelOrderModal'); // Thêm
         const reserveModal = document.getElementById('reserveTableModal'); // Thêm
+        const selectMenuModal = document.getElementById('selectMenuModal');
+
         if (event.target == viewModal) closeModal('viewTableModal');
         if (event.target == moveModal) closeModal('moveTableModal');
         if (event.target == mergeModal) closeModal('mergeTableModal');
         if (event.target == splitModal) closeModal('splitTableModal'); // Thêm
         if (event.target == cancelModal) closeModal('cancelOrderModal'); // Thêm
         if (event.target == reserveModal) closeModal('reserveTableModal'); // Thêm
+        if (event.target == selectMenuModal) closeModal('selectMenuModal');
     }
 </script>
 </body>

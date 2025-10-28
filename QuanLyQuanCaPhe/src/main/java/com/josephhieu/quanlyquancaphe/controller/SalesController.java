@@ -2,9 +2,11 @@ package com.josephhieu.quanlyquancaphe.controller;
 
 import com.josephhieu.quanlyquancaphe.dto.*;
 import com.josephhieu.quanlyquancaphe.entity.Ban;
+import com.josephhieu.quanlyquancaphe.entity.ThucDon;
 import com.josephhieu.quanlyquancaphe.exception.NotFoundException;
 import com.josephhieu.quanlyquancaphe.service.BanService;
 import com.josephhieu.quanlyquancaphe.service.SalesService;
+import com.josephhieu.quanlyquancaphe.service.ThucDonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -21,6 +23,9 @@ public class SalesController {
 
     @Autowired
     private SalesService salesService;
+
+    @Autowired
+    private ThucDonService thucDonService;
 
     @GetMapping("/sales")
     public String showSalesPage(Model model) {
@@ -150,6 +155,44 @@ public class SalesController {
             e.printStackTrace();
             // Trả về 500 Internal Server Error
             return ResponseEntity.internalServerError().body("Lỗi hệ thống khi đặt bàn.");
+        }
+    }
+
+    /**
+     * Endpoint MỚI: Xử lý cập nhật đơn hàng cho bàn
+     * URL: /sales/update-order (POST)
+     */
+    @PostMapping("/sales/update-order")
+    @ResponseBody
+    public ResponseEntity<?> updateOrder(@RequestBody AddItemRequestDTO request) { // Dùng lại DTO cũ
+        try {
+            salesService.updateOrder(request.getMaBan(), request.getItems());
+            // Trả về 200 OK
+            return ResponseEntity.ok().body("{\"message\": \"Cập nhật đơn hàng thành công!\"}");
+        } catch (NotFoundException | IllegalArgumentException e) {
+            // Trả về 400 Bad Request
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Trả về 500 Internal Server Error
+            return ResponseEntity.internalServerError().body("Lỗi hệ thống khi cập nhật đơn hàng.");
+        }
+    }
+
+    /**
+     * Endpoint MỚI: Cung cấp danh sách món ăn (Thực đơn)
+     * URL: /menu (GET)
+     */
+    @GetMapping("/menu")
+    @ResponseBody // Trả về JSON
+    public ResponseEntity<List<ThucDon>> getMenu() {
+        try {
+            List<ThucDon> menu = thucDonService.getAllThucDonSorted();
+            return ResponseEntity.ok(menu); // Trả về danh sách món
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy thực đơn: " + e.getMessage()); // Log lỗi ra console backend
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build(); // Trả về lỗi 500
         }
     }
 }
