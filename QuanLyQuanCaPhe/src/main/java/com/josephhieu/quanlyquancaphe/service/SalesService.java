@@ -42,6 +42,37 @@ public class SalesService {
     private ThucDonRepository thucDonRepository;
 
     /**
+     * PHƯƠNG THỨC MỚI: Xử lý thanh toán
+     */
+    @Transactional
+    public void processPayment(String maBan, boolean resetTable) {
+        // 1. Tìm bàn và hóa đơn hoạt động
+        Ban ban = banRepository.findById(maBan)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bàn: " + maBan));
+        ChiTietDatBan booking = chiTietDatBanRepository.findByBanMaBanAndHoaDonTrangThai(maBan, false)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn/đặt bàn đang hoạt động cho bàn " + ban.getTenBan()));
+        HoaDon hoaDon = booking.getHoaDon();
+
+        // 2. Đánh dấu hóa đơn đã thanh toán
+        hoaDon.setTrangThai(true); // true = đã thanh toán
+        // Có thể lưu thêm thời gian thanh toán nếu cần
+//         hoaDon.setThoiGianThanhToan(LocalDateTime.now());
+        hoaDonRepository.save(hoaDon);
+
+        // 3. Cập nhật trạng thái bàn nếu được yêu cầu
+        if (resetTable) {
+            ban.setTinhTrang("Trống");
+            banRepository.save(ban);
+//             Xóa luôn ChiTietDatBan vì bàn đã trống? (Tùy logic)
+             chiTietDatBanRepository.delete(booking);
+        }
+        // Nếu không reset, bàn vẫn giữ trạng thái "Có khách" nhưng hóa đơn đã thanh toán.
+        // Cần có logic dọn bàn riêng sau đó.
+
+        System.out.println("Đã thanh toán thành công cho bàn " + ban.getTenBan());
+    }
+
+    /**
      * PHƯƠNG THỨC MỚI: Cập nhật toàn bộ đơn hàng cho bàn
      */
     @Transactional

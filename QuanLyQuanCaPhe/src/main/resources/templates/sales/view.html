@@ -44,7 +44,7 @@
 
         <div class="order-buttons">
             <button onclick="openSelectMenuModal()">Chọn thực đơn.....</button>
-            <button onclick="processPayment()">Thanh toán.....</button>
+            <button onclick="openPaymentModal()">Thanh toán.....</button>
             <button onclick="printBill()">In ấn.....</button>
         </div>
 
@@ -214,6 +214,54 @@
                 </div>
             </div>
         </div>
+
+        <div id="paymentModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal('paymentModal')">&times;</span>
+                <h4 id="paymentModalTitle">Thanh toán bàn X</h4>
+
+                <div class="order-summary">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Tên món</th>
+                            <th>SL</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                        </thead>
+                        <tbody id="paymentItemsBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="payment-details">
+                    <label>Tổng:</label>
+                    <span id="paymentTotalAmount">0 đ</span>
+
+                    <label for="customerPaidAmount">Khách đưa:</label>
+                    <input type="number" id="customerPaidAmount" min="0" oninput="calculateChange()" placeholder="Nhập số tiền khách đưa"/>
+
+                    <label>Thối lại:</label>
+                    <span id="changeAmount">0 đ</span>
+
+                    <div></div> <button class="print-button" onclick="printPaymentBill()">In phiếu thanh toán...</button>
+
+                </div>
+
+                <div class="reset-table-option" style="margin-bottom: 20px; text-align: right;">
+                    <label>
+                        <input type="checkbox" id="resetTableAfterPayment" checked>
+                        Đổi trạng thái bàn sang trống sau khi thanh toán
+                    </label>
+                </div>
+
+
+                <div class="modal-actions">
+                    <button onclick="confirmPayment()">Thanh toán</button>
+                    <button onclick="closeModal('paymentModal')">Hủy</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!--  Form đặt ban trước  -->
@@ -251,6 +299,7 @@
     let itemsToSplit = {}; // Lưu trữ món đang chọn để tách { maThucDon: { tenMon: '...', soLuongHienTai: X, soLuongTach: Y } }
     let currentOrderItems = {}; // Lưu trữ món hiện tại của bàn { maThucDon: soLuong }
     let fullMenu = [];
+    let currentBillTotal = 0; // lưu tổng tiền hóa đơn hiện tại
 
     // Lưu dữ liệu bàn khi trang load (nếu cần lấy bàn trống từ dữ liệu đã có)
     document.addEventListener('DOMContentLoaded', () => {
@@ -1056,7 +1105,134 @@
             });
     }
 
-    function processPayment() { console.log('Thanh toán cho bàn:', selectedTableId); }
+    // --- HÀM MỚI ĐỂ MỞ MODAL THANH TOÁN ---
+    function openPaymentModal() {
+        if (!selectedTableId) {
+            alert('Vui lòng chọn bàn cần thanh toán.');
+            return;
+        }
+        // Kiểm tra bàn có khách/đặt trước không
+        const selectedTableElement = document.querySelector(`.table-item[data-maban="${selectedTableId}"]`);
+        if (!selectedTableElement || selectedTableElement.classList.contains('status-trong')) {
+            alert('Bàn này đang trống, không có gì để thanh toán.');
+            return;
+        }
+
+        console.log('Mở modal thanh toán cho bàn:', selectedTableId);
+        document.getElementById('paymentModalTitle').textContent = `Thanh toán ${selectedTableName}`;
+
+        // Reset form thanh toán
+        document.getElementById('customerPaidAmount').value = '';
+        document.getElementById('changeAmount').textContent = '0 đ';
+        document.getElementById('resetTableAfterPayment').checked = true; // Mặc định check
+        const paymentTableBody = document.getElementById('paymentItemsBody');
+        paymentTableBody.innerHTML = '<tr><td colspan="3">Đang tải chi tiết...</td></tr>';
+        document.getElementById('paymentTotalAmount').textContent = '...';
+        currentBillTotal = 0;
+
+        // Gọi API lấy chi tiết đơn hàng (dùng lại API cũ)
+        fetch(`/sales/table/${selectedTableId}`)
+            .then(response => response.ok ? response.json() : Promise.reject('Lỗi lấy chi tiết hóa đơn'))
+            .then(data => {
+                paymentTableBody.innerHTML = ''; // Xóa loading
+                let calculatedTotal = 0;
+                if (data.orderedItems && data.orderedItems.length > 0) {
+                    data.orderedItems.forEach(item => {
+                        // Cần lấy giá và thành tiền từ backend hoặc tính lại
+                        // Giả định backend trả về thành tiền (cần cập nhật DTO và Service)
+                        // Hoặc lấy giá từ fullMenu nếu đã tải
+                        const menuItem = fullMenu.find(m => m.maThucDon === item.maThucDon);
+                        const price = menuItem ? menuItem.giaTienHienTai : 0; // Lấy giá từ menu
+                        const lineTotal = price * item.soLuong;
+                        calculatedTotal += lineTotal;
+
+                        const row = paymentTableBody.insertRow();
+                        row.insertCell(0).textContent = item.tenMon;
+                        row.insertCell(1).textContent = item.soLuong;
+                        row.insertCell(2).textContent = lineTotal.toLocaleString('vi-VN') + ' đ';
+                    });
+                    currentBillTotal = calculatedTotal; // Lưu tổng tiền
+                    document.getElementById('paymentTotalAmount').textContent = currentBillTotal.toLocaleString('vi-VN') + ' đ';
+                } else {
+                    paymentTableBody.innerHTML = '<tr><td colspan="3">Chưa gọi món.</td></tr>';
+                    document.getElementById('paymentTotalAmount').textContent = '0 đ';
+                }
+                openModal('paymentModal');
+            })
+            .catch(error => {
+                console.error('Lỗi khi mở modal thanh toán:', error);
+                alert('Không thể tải chi tiết hóa đơn cho bàn này.');
+            });
+    }
+
+    // --- HÀM MỚI ĐỂ TÍNH TIỀN THỐI ---
+    function calculateChange() {
+        const customerPaid = parseFloat(document.getElementById('customerPaidAmount').value) || 0;
+        const change = customerPaid - currentBillTotal;
+        document.getElementById('changeAmount').textContent = (change >= 0 ? change : 0).toLocaleString('vi-VN') + ' đ';
+    }
+
+    // --- HÀM MỚI ĐỂ XÁC NHẬN THANH TOÁN ---
+    function confirmPayment() {
+        if (!selectedTableId) return;
+        const customerPaid = parseFloat(document.getElementById('customerPaidAmount').value) || 0;
+        const resetTable = document.getElementById('resetTableAfterPayment').checked;
+
+        // Có thể thêm kiểm tra khách đưa đủ tiền
+        if (customerPaid < currentBillTotal) {
+            if (!confirm(`Khách đưa ${customerPaid.toLocaleString('vi-VN')} đ, chưa đủ ${currentBillTotal.toLocaleString('vi-VN')} đ. Vẫn tiếp tục thanh toán?`)) {
+                return;
+            }
+        }
+
+
+        console.log(`Xác nhận thanh toán bàn ${selectedTableId}, khách đưa ${customerPaid}, reset bàn: ${resetTable}`);
+
+        // Gọi API backend
+        fetch('/sales/process-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')]: document.querySelector('meta[name="_csrf"]')?.getAttribute('content')
+            },
+            body: JSON.stringify({
+                maBan: selectedTableId,
+                resetTable: resetTable // Gửi trạng thái checkbox
+                // Thêm customerPaid nếu backend cần lưu
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text || 'Thanh toán thất bại.') });
+                }
+                return response.text(); // Hoặc json()
+            })
+            .then(data => {
+                console.log('Thanh toán thành công:', data);
+                closeModal('paymentModal');
+                alert('Thanh toán thành công!');
+                window.location.reload(); // Tải lại trang
+            })
+            .catch(error => {
+                console.error('Lỗi khi thanh toán:', error);
+                alert(`Lỗi: ${error.message}`);
+            });
+    }
+
+    // --- HÀM MỚI CHO NÚT IN (Tạm thời alert) ---
+    function printPaymentBill() {
+        if (!selectedTableId) {
+            alert('Vui lòng chọn bàn.');
+            return;
+        }
+        // Logic in thực tế sẽ phức tạp hơn, có thể gọi API backend
+        // để lấy dữ liệu hóa đơn đã định dạng hoặc dùng thư viện JS để in
+        console.log('Yêu cầu in phiếu thanh toán cho bàn:', selectedTableId);
+        alert('Chức năng In phiếu thanh toán đang được phát triển!');
+        // Ví dụ gọi API backend:
+        // window.open(`/sales/bill/${selectedTableId}/print`, '_blank');
+    }
+
     function printBill() { console.log('In hóa đơn cho bàn:', selectedTableId); }
 
     // Đóng modal khi click ra ngoài
@@ -1068,6 +1244,7 @@
         const cancelModal = document.getElementById('cancelOrderModal'); // Thêm
         const reserveModal = document.getElementById('reserveTableModal'); // Thêm
         const selectMenuModal = document.getElementById('selectMenuModal');
+        const paymentModal = document.getElementById('paymentModal'); // Thêm
 
         if (event.target == viewModal) closeModal('viewTableModal');
         if (event.target == moveModal) closeModal('moveTableModal');
@@ -1076,6 +1253,7 @@
         if (event.target == cancelModal) closeModal('cancelOrderModal'); // Thêm
         if (event.target == reserveModal) closeModal('reserveTableModal'); // Thêm
         if (event.target == selectMenuModal) closeModal('selectMenuModal');
+        if (event.target == paymentModal) closeModal('paymentModal'); // Thêm
     }
 </script>
 </body>

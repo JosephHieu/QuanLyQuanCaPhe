@@ -163,3 +163,27 @@
 #selectMenuModal #menuItemList input[type="number"] { width: 60px; text-align: center; }
 #selectMenuModal #selectedItemsList { display: none; } /* Không cần hiển thị list riêng nữa */
 #selectMenuModal .modal-actions button { margin-left: 10px; }
+
+/* === CSS MỚI CHO MODAL THANH TOÁN === */
+#paymentModal .modal-content { max-width: 500px; }
+#paymentModal .order-summary { max-height: 200px; overflow-y: auto; border: 1px solid #eee; margin-bottom: 15px; }
+#paymentModal .order-summary table { width: 100%; }
+#paymentModal .order-summary th { position: sticky; top: 0; background-color: #f2f2f2; z-index: 1;}
+#paymentModal .order-summary td:nth-child(2), #paymentModal .order-summary th:nth-child(2) { text-align: center; } /* Căn giữa SL */
+#paymentModal .order-summary td:nth-child(3), #paymentModal .order-summary th:nth-child(3) { text-align: right; } /* Căn phải Thành tiền */
+
+#paymentModal .payment-details {
+    display: grid;
+    grid-template-columns: 100px 1fr; /* Nhãn và Input */
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 15px;
+    border-top: 1px dashed #ccc;
+    padding-top: 15px;
+}
+#paymentModal .payment-details label { text-align: right; font-weight: bold; }
+#paymentModal .payment-details input[type="number"] { padding: 8px; border: 1px solid #ccc; width: 95%; }
+#paymentModal .payment-details span { font-weight: bold; } /* Hiển thị Tổng, Thối lại */
+#paymentModal .print-button { margin-left: auto; } /* Đẩy nút In sang phải */
+#paymentModal .reset-table-option label { font-weight: normal; }
+#paymentModal .modal-actions { justify-content: flex-end; /* Đẩy nút Thanh toán/Hủy sang phải */ }

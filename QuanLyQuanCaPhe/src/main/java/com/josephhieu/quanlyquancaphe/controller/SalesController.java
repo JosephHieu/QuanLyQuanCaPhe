@@ -195,4 +195,47 @@ public class SalesController {
             return ResponseEntity.internalServerError().build(); // Trả về lỗi 500
         }
     }
+
+    /**
+     * Endpoint MỚI: Xử lý yêu cầu thanh toán
+     * URL: /sales/process-payment (POST)
+     */
+    @PostMapping("/sales/process-payment")
+    @ResponseBody
+    public ResponseEntity<?> processPayment(@RequestBody ProcessPaymentRequestDTO request) {
+        try {
+            salesService.processPayment(request.getMaBan(), request.isResetTable());
+            return ResponseEntity.ok().body("{\"message\": \"Thanh toán thành công!\"}");
+
+            // --- SỬA LẠI CÁC KHỐI CATCH ---
+
+            // 1. Bắt các lỗi cụ thể (NotFound, IllegalArgument) trước
+            //    Vì xử lý giống nhau (trả về 400 Bad Request), có thể gộp chúng lại
+        } catch (NotFoundException | IllegalArgumentException e) {
+            System.err.println("Validation Error during payment: " + e.getMessage()); // Log lỗi cụ thể hơn
+            return ResponseEntity.badRequest().body(e.getMessage()); // Trả về lỗi 400
+
+            // 2. Bắt các lỗi RuntimeException khác (không mong đợi)
+        } catch (RuntimeException e) { // Bắt RuntimeException riêng
+            System.err.println("Unexpected Runtime Error during payment: " + e.getMessage());
+            e.printStackTrace(); // In stack trace để debug
+            return ResponseEntity.internalServerError().body("Lỗi hệ thống không mong đợi khi thanh toán."); // Trả về 500
+
+            // 3. Bắt lỗi Exception chung (cho các lỗi khác như IOException nếu có)
+        } catch (Exception e) {
+            System.err.println("General Error during payment: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Lỗi hệ thống khi thanh toán."); // Trả về 500
+        }
+    }
+
+    // (Optional: Endpoint để in hóa đơn)
+     /*
+     @GetMapping("/sales/bill/{maBan}/print")
+     public String printBillPage(@PathVariable String maBan, Model model) {
+         // Lấy thông tin hóa đơn đã thanh toán (hoặc chưa) của bàn
+         // Trả về một trang HTML được thiết kế để in
+         return "sales/bill_print";
+     }
+     */
 }
