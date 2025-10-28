@@ -1,5 +1,6 @@
 package com.josephhieu.quanlyquancaphe.controller;
 
+import com.josephhieu.quanlyquancaphe.dto.MergeTablesRequestDTO;
 import com.josephhieu.quanlyquancaphe.dto.MoveTableRequestDTO;
 import com.josephhieu.quanlyquancaphe.dto.TableDetailsDTO;
 import com.josephhieu.quanlyquancaphe.entity.Ban;
@@ -68,4 +69,26 @@ public class SalesController {
             return ResponseEntity.internalServerError().body("Lỗi hệ thống khi chuyển bàn.");
         }
     }
+
+    /**
+     * Endpoint MỚI: Xử lý yêu cầu gộp bàn
+     * URL: /sales/merge-tables (POST)
+     */
+    @PostMapping("/sales/merge-tables")
+    @ResponseBody
+    public ResponseEntity<?> mergeTables(@RequestBody MergeTablesRequestDTO request) {
+        try {
+            salesService.mergeTables(request.getSourceTableIds(), request.getDestinationTableId());
+            // Trả về 200 OK
+            return ResponseEntity.ok().body("{\"message\": \"Gộp bàn thành công!\"}");
+        } catch (NotFoundException | IllegalArgumentException e) {
+            // Trả về 400 Bad Request
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Trả về 500 Internal Server Error
+            return ResponseEntity.internalServerError().body("Lỗi hệ thống khi gộp bàn.");
+        }
+    }
+
 }

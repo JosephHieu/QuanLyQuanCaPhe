@@ -4,117 +4,11 @@
     <meta charset="UTF-8">
     <title>Quản lý Bán hàng</title>
     <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <link rel="stylesheet" th:href="@{/css/sales.css}" />
 
     <meta name="_csrf" th:content="${_csrf?.token}"/>
     <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
 
-    <style>
-        .main-content { background-color: #fff; /* Nền trắng cho khu vực chính */ }
-        .table-grid {
-            display: grid;
-            /* Tạo lưới 4 cột, tự động điều chỉnh chiều rộng */
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px; /* Khoảng cách giữa các ô */
-            padding: 15px;
-            border: 1px solid #ccc;
-            background-color: #f8f9fa; /* Nền xám nhạt cho lưới */
-            margin-bottom: 15px;
-        }
-        .table-item {
-            border: 1px solid #adb5bd; /* Viền xám đậm hơn */
-            padding: 20px;
-            text-align: center;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 4px;
-            min-height: 60px; /* Chiều cao tối thiểu */
-            display: flex; /* Căn giữa nội dung */
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .table-item.status-trong { background-color: #e9ecef; color: #495057; }
-        .table-item.status-cokhach { background-color: #ced4da; color: #212529; }
-        .table-item.status-dattruoc { background-color: #fff3cd; color: #856404; }
-
-        .table-item.selected {
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-        }
-        .table-item small { font-weight: normal; font-size: 0.8em; margin-top: 5px; } /* Hiển thị trạng thái */
-
-        .action-buttons, .order-buttons {
-            display: flex;
-            gap: 10px; /* Khoảng cách giữa các nút */
-            margin-bottom: 15px;
-            padding: 0 15px; /* Canh lề */
-        }
-        .action-buttons button, .order-buttons button {
-            padding: 10px 15px;
-            border: 1px solid #ccc;
-            background-color: #f8f9fa;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        .order-buttons button { flex-grow: 1; } /* Nút hàng dưới chiếm đều không gian */
-        .action-buttons button:hover, .order-buttons button:hover { background-color: #e2e6ea; }
-
-        /* === CSS MỚI CHO MODAL === */
-        .modal {
-            display: none; /* Ẩn ban đầu */
-            position: fixed; /* Che phủ toàn màn hình */
-            z-index: 1000; /* Hiển thị trên cùng */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto; /* Cho phép cuộn nếu nội dung dài */
-            background-color: rgba(0,0,0,0.4); /* Nền mờ */
-            padding-top: 60px; /* Khoảng cách từ trên xuống */
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto; /* Canh giữa */
-            padding: 20px;
-            border: 1px solid #888;
-            width: 60%; /* Chiều rộng modal */
-            max-width: 500px;
-            border-radius: 5px;
-            position: relative;
-        }
-        .close-button {
-            color: #aaa;
-            position: absolute; /* Góc trên phải */
-            top: 10px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
-            text-decoration: none;
-        }
-        .modal h4 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .modal table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
-        .modal th, .modal td { border: 1px solid #ddd; padding: 8px; text-align: left;}
-        .modal th { background-color: #f2f2f2; }
-        .modal .reservation-info { margin-bottom: 20px; padding: 10px; border: 1px dashed #ccc; background-color: #f9f9f9; }
-        .modal .modal-actions { text-align: right; }
-        .modal .modal-actions button { padding: 8px 15px; cursor: pointer; }
-
-        /* CSS specific to move table modal */
-        #moveTableModal select {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-    </style>
 </head>
 <body>
 <div th:insert="~{fragments/header :: header}"></div>
@@ -143,7 +37,7 @@
             <button onclick="viewTable()">Xem bàn</button>
             <button onclick="openMoveTableModal()">Chuyển bàn</button>
             <button onclick="splitTable()">Tách bàn</button>
-            <button onclick="mergeTable()">Gộp bàn</button>
+            <button onclick="openMergeTableModal()">Gộp bàn</button>
             <button onclick="cancelOrder()">Hủy bàn</button>
             <button onclick="reserveTable()">Đặt bàn</button>
         </div>
@@ -197,6 +91,34 @@
                 <div class="modal-actions">
                     <button onclick="confirmMoveTable()">Chuyển</button>
                     <button onclick="closeModal('moveTableModal')">Hủy</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mergeTableModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal('mergeTableModal')">&times;</span>
+                <h4 id="mergeModalTitle">Gộp bàn</h4>
+
+                <div class="merge-container">
+                    <div class="table-list-container">
+                        <h5>Chọn các bàn cần gộp:</h5>
+                        <div id="sourceTableChecklist">
+                        </div>
+                    </div>
+
+                    <div class="merge-arrow">&gt;&gt;&gt;</div>
+
+                    <div class="table-list-container">
+                        <h5>Chọn bàn gộp đến:</h5>
+                        <div id="destinationTableRadioList">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 20px;">
+                    <button onclick="confirmMergeTables()">Gộp</button>
+                    <button onclick="closeModal('mergeTableModal')">Hủy</button>
                 </div>
             </div>
         </div>
@@ -401,7 +323,126 @@
     }
 
     function splitTable() { console.log('Tách bàn:', selectedTableId); }
-    function mergeTable() { console.log('Gộp bàn:', selectedTableId); }
+
+    // --- HÀM MỚI ĐỂ MỞ MODAL GỘP BÀN ---
+    function openMergeTableModal() {
+        // Lọc ra các bàn đang có khách hoặc đặt trước (nguồn)
+        // Lọc ra các bàn đang có khách hoặc đặt trước (nguồn VÀ đích tiềm năng)
+        const occupiedTables = allTablesData.filter(table => table.status !== 'Trống');
+        // Lọc ra các bàn trống (đích tiềm năng)
+        const emptyTables = allTablesData.filter(table => table.status === 'Trống');
+
+        // Phải có ít nhất 1 bàn có khách/đặt trước để làm nguồn
+        if (occupiedTables.length < 1) {
+            alert('Cần ít nhất 1 bàn có khách/đặt trước để thực hiện gộp.');
+            return;
+        }
+
+        console.log('Mở modal gộp bàn');
+        document.getElementById('mergeModalTitle').textContent = `Gộp bàn`;
+
+        const sourceChecklist = document.getElementById('sourceTableChecklist');
+        const destinationRadioList = document.getElementById('destinationTableRadioList');
+        sourceChecklist.innerHTML = ''; // Reset checklist
+        destinationRadioList.innerHTML = ''; // Reset radio list
+
+        // Tạo checkbox cho các bàn nguồn (có khách/đặt trước)
+        occupiedTables.forEach(table => {
+            const checkboxLabel = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'sourceTables';
+            checkbox.value = table.id;
+            // Tự động check bàn đang được chọn
+            if (selectedTableId === table.id) {
+                checkbox.checked = true;
+            }
+            checkboxLabel.appendChild(checkbox);
+            checkboxLabel.appendChild(document.createTextNode(` ${table.name}`));
+            sourceChecklist.appendChild(checkboxLabel);
+        });
+
+        // *** SỬA Ở ĐÂY: Tạo radio button cho TẤT CẢ bàn (cả trống và có khách) ***
+        // Hoặc chỉ các bàn có khách/đặt trước + bàn trống
+        // Hiện tại: Hiển thị TẤT CẢ bàn làm đích tiềm năng
+        allTablesData.forEach((table, index) => { // Dùng allTablesData
+            const radioLabel = document.createElement('label');
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = 'destinationTable';
+            radio.value = table.id;
+            // Tự động chọn bàn đang được selectedTableId làm đích (nếu có)
+            if (selectedTableId === table.id && table.status !== 'Trống') {
+                radio.checked = true;
+            }
+            // Hoặc chọn bàn đầu tiên
+            // else if (index === 0) { radio.checked = true;}
+
+            radioLabel.appendChild(radio);
+            radioLabel.appendChild(document.createTextNode(` ${table.name} (${table.status})`)); // Hiển thị cả trạng thái
+            destinationRadioList.appendChild(radioLabel);
+        });
+
+        openModal('mergeTableModal');
+    }
+
+    // --- HÀM MỚI ĐỂ XÁC NHẬN GỘP BÀN ---
+    function confirmMergeTables() {
+        const selectedSourceCheckboxes = document.querySelectorAll('#sourceTableChecklist input[name="sourceTables"]:checked');
+        const selectedDestinationRadio = document.querySelector('#destinationTableRadioList input[name="destinationTable"]:checked');
+
+        const sourceTableIds = Array.from(selectedSourceCheckboxes).map(cb => cb.value);
+        const destinationTableId = selectedDestinationRadio ? selectedDestinationRadio.value : null;
+
+        // Validation: Cần ít nhất 1 bàn nguồn
+        if (sourceTableIds.length < 1) {
+            alert('Vui lòng chọn ít nhất một bàn nguồn để gộp.');
+            return;
+        }
+        if (!destinationTableId) {
+            alert('Vui lòng chọn bàn đích để gộp đến.');
+            return;
+        }
+        // Validation: Nếu chỉ chọn 1 bàn nguồn, bàn đích phải khác bàn nguồn đó
+        if (sourceTableIds.length === 1 && sourceTableIds[0] === destinationTableId) {
+            alert('Không thể gộp một bàn vào chính nó.');
+            return;
+        }
+
+
+        console.log(`Xác nhận gộp bàn: ${sourceTableIds.join(', ')} vào bàn ${destinationTableId}`);
+
+        // Gọi API backend
+        fetch('/sales/merge-tables', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Thêm CSRF token
+                [document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')]: document.querySelector('meta[name="_csrf"]')?.getAttribute('content')
+            },
+            body: JSON.stringify({
+                sourceTableIds: sourceTableIds,
+                destinationTableId: destinationTableId
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text || 'Gộp bàn thất bại.') });
+                }
+                return response.json(); // Hoặc text()
+            })
+            .then(data => {
+                console.log('Gộp bàn thành công:', data);
+                closeModal('mergeTableModal');
+                alert('Gộp bàn thành công!');
+                window.location.reload(); // Tải lại trang
+            })
+            .catch(error => {
+                console.error('Lỗi khi gộp bàn:', error);
+                alert(`Lỗi: ${error.message}`);
+            });
+    }
+
     function cancelOrder() { console.log('Hủy bàn:', selectedTableId); }
     function reserveTable() { console.log('Đặt bàn:', selectedTableId); }
     function selectMenu() { console.log('Chọn thực đơn cho bàn:', selectedTableId); }
@@ -409,11 +450,13 @@
     function printBill() { console.log('In hóa đơn cho bàn:', selectedTableId); }
 
     // Đóng modal khi click ra ngoài
-    window.onclick = function(event) { // Đóng cả 2 modal khi click ra ngoài
+    window.onclick = function(event) {
         const viewModal = document.getElementById('viewTableModal');
         const moveModal = document.getElementById('moveTableModal');
+        const mergeModal = document.getElementById('mergeTableModal');
         if (event.target == viewModal) closeModal('viewTableModal');
         if (event.target == moveModal) closeModal('moveTableModal');
+        if (event.target == mergeModal) closeModal('mergeTableModal');
     }
 </script>
 </body>

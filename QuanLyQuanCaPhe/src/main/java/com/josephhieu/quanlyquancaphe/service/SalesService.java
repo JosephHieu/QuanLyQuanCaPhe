@@ -1,6 +1,7 @@
 package com.josephhieu.quanlyquancaphe.service;
 
 import com.josephhieu.quanlyquancaphe.entity.id.ChiTietDatBanId;
+import com.josephhieu.quanlyquancaphe.entity.id.ChiTietHoaDonId;
 import org.springframework.stereotype.Service;
 
 import com.josephhieu.quanlyquancaphe.dto.OrderItemDTO;
@@ -13,9 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +33,166 @@ public class SalesService {
 
     @Autowired
     private ChiTietHoaDonRepository chiTietHoaDonRepository;
+
+    @Transactional
+    public void mergeTables(List<String> sourceTableIds, String destinationTableId) {
+        // 1. Validation cơ bản
+        if (sourceTableIds == null || sourceTableIds.isEmpty()) {
+            throw new IllegalArgumentException("Cần chọn ít nhất 1 bàn nguồn để gộp.");
+        }
+        if (destinationTableId == null) {
+            throw new IllegalArgumentException("Chưa chọn bàn đích.");
+        }
+        if (sourceTableIds.size() == 1 && sourceTableIds.get(0).equals(destinationTableId)) {
+            throw new IllegalArgumentException("Không thể gộp một bàn vào chính nó.");
+        }
+
+
+        // 2. Lấy thông tin bàn đích
+        Ban destinationTable = banRepository.findById(destinationTableId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bàn đích: " + destinationTableId));
+
+        HoaDon destinationHoaDon;
+        ChiTietDatBan destBooking = null; // Sẽ cần nếu đích không trống
+        NhanVien firstSourceNhanVien = null; // Cần để tạo booking mới nếu đích trống
+        Map<String, ChiTietHoaDon> destinationItemsMap = new HashMap<>(); // Lưu món của bàn đích
+        boolean isDestinationOriginallyEmpty = "Trống".equalsIgnoreCase(destinationTable.getTinhTrang());
+
+        // 3. Xử lý dựa trên trạng thái bàn đích
+        if (isDestinationOriginallyEmpty) {
+            // --- TRƯỜNG HỢP 1: BÀN ĐÍCH TRỐNG ---
+            System.out.println("Gộp vào bàn trống: " + destinationTable.getTenBan());
+            // Tạo Hóa đơn MỚI cho bàn đích
+            destinationHoaDon = new HoaDon();
+            destinationHoaDon.setNgayGioTao(LocalDateTime.now());
+            destinationHoaDon.setTrangThai(false);
+            destinationHoaDon.setTongTien(BigDecimal.ZERO);
+            destinationHoaDon = hoaDonRepository.save(destinationHoaDon); // Lưu để lấy ID
+        } else {
+            // --- TRƯỜNG HỢP 2: BÀN ĐÍCH ĐÃ CÓ KHÁCH/ĐẶT TRƯỚC ---
+            System.out.println("Gộp vào bàn có khách/đặt trước: " + destinationTable.getTenBan());
+            // Tìm Hóa đơn hiện có của bàn đích
+            destBooking = chiTietDatBanRepository.findByBanMaBanAndHoaDonTrangThai(destinationTableId, false)
+                    .orElseThrow(() -> new RuntimeException("Bàn đích ["+ destinationTable.getTenBan() +"] không có hóa đơn/đặt bàn hoạt động."));
+            destinationHoaDon = destBooking.getHoaDon();
+            // Lấy danh sách món hiện có của bàn đích
+            destinationItemsMap = chiTietHoaDonRepository.findByHoaDonMaHoaDon(destinationHoaDon.getMaHoaDon())
+                    .stream()
+                    .collect(Collectors.toMap(cthd -> cthd.getId().getMaThucDon(), cthd -> cthd));
+        }
+
+        BigDecimal totalMergedAmount = BigDecimal.ZERO; // Chỉ tính tiền từ các bàn nguồn
+        List<HoaDon> sourceHoaDonsToDelete = new ArrayList<>();
+        String representativeCustomerName = isDestinationOriginallyEmpty ? "Gộp bàn" : destBooking.getTenKhachHang(); // Tên khách
+
+        // 4. Lặp qua các bàn nguồn để xử lý gộp
+        for (String sourceId : sourceTableIds) {
+            // Bỏ qua nếu bàn nguồn chính là bàn đích (chỉ xảy ra khi đích không trống)
+            if (sourceId.equals(destinationTableId)) {
+                continue;
+            }
+
+            Ban sourceTable = banRepository.findById(sourceId)
+                    .orElseThrow(() -> new NotFoundException("Không tìm thấy bàn nguồn: " + sourceId));
+            ChiTietDatBan sourceBooking = chiTietDatBanRepository.findByBanMaBanAndHoaDonTrangThai(sourceId, false)
+                    .orElseThrow(() -> new RuntimeException("Bàn nguồn " + sourceTable.getTenBan() + " không có hóa đơn/đặt bàn hoạt động."));
+            HoaDon sourceHoaDon = sourceBooking.getHoaDon();
+            sourceHoaDonsToDelete.add(sourceHoaDon);
+
+            // Lấy nhân viên từ bàn nguồn đầu tiên (chỉ cần nếu đích trống)
+            if (isDestinationOriginallyEmpty && firstSourceNhanVien == null) {
+                firstSourceNhanVien = sourceBooking.getNhanVien();
+                // Lấy tên khách từ bàn nguồn đầu tiên nếu muốn
+                // representativeCustomerName = sourceBooking.getTenKhachHang();
+            }
+
+            // Lấy chi tiết món ăn của hóa đơn nguồn
+            List<ChiTietHoaDon> sourceItems = chiTietHoaDonRepository.findByHoaDonMaHoaDon(sourceHoaDon.getMaHoaDon());
+
+            for (ChiTietHoaDon sourceItem : sourceItems) {
+                totalMergedAmount = totalMergedAmount.add(sourceItem.getThanhTien()); // Cộng dồn tiền từ nguồn
+
+                String maThucDon = sourceItem.getId().getMaThucDon();
+                // Kiểm tra xem món này đã có ở bàn đích (trong map) chưa
+                if (destinationItemsMap.containsKey(maThucDon)) {
+                    // Đã có -> Cập nhật số lượng và thành tiền
+                    ChiTietHoaDon destItem = destinationItemsMap.get(maThucDon);
+                    destItem.setSoLuong(destItem.getSoLuong() + sourceItem.getSoLuong());
+                    destItem.setThanhTien(destItem.getThanhTien().add(sourceItem.getThanhTien()));
+                } else {
+                    // Chưa có -> Tạo ChiTietHoaDon mới cho hóa đơn đích
+                    ChiTietHoaDon newItem = new ChiTietHoaDon();
+                    ChiTietHoaDonId newItemId = new ChiTietHoaDonId();
+                    newItemId.setMaHoaDon(destinationHoaDon.getMaHoaDon()); // ID hóa đơn đích
+                    newItemId.setMaThucDon(maThucDon);
+
+                    newItem.setId(newItemId);
+                    newItem.setHoaDon(destinationHoaDon); // Liên kết hóa đơn đích
+                    newItem.setThucDon(sourceItem.getThucDon());
+                    newItem.setSoLuong(sourceItem.getSoLuong());
+                    newItem.setGiaTaiThoiDiemBan(sourceItem.getGiaTaiThoiDiemBan());
+                    newItem.setThanhTien(sourceItem.getThanhTien());
+
+                    destinationItemsMap.put(maThucDon, newItem); // Thêm vào map để lưu sau
+                }
+            }
+
+            // 5. Xóa ChiTietDatBan của bàn nguồn
+            chiTietDatBanRepository.delete(sourceBooking);
+
+            // 6. Cập nhật trạng thái bàn nguồn thành "Trống"
+            sourceTable.setTinhTrang("Trống");
+            banRepository.save(sourceTable);
+        } // Kết thúc vòng lặp bàn nguồn
+
+        // 7. Nếu bàn đích ban đầu trống, tạo ChiTietDatBan mới cho nó
+        if (isDestinationOriginallyEmpty) {
+            if (firstSourceNhanVien == null && !sourceTableIds.isEmpty()) {
+                // Cố gắng lấy nhân viên từ bàn nguồn cuối cùng (nếu chỉ có 1 bàn nguồn và nó là bàn đích thì sẽ lỗi)
+                // Cần đảm bảo logic lấy firstSourceNhanVien chạy đúng
+                ChiTietDatBan lastSourceBooking = chiTietDatBanRepository.findByBanMaBanAndHoaDonTrangThai(sourceTableIds.get(sourceTableIds.size()-1), false).orElse(null);
+                if(lastSourceBooking!=null) firstSourceNhanVien = lastSourceBooking.getNhanVien();
+            }
+            if (firstSourceNhanVien == null) {
+                throw new RuntimeException("Không thể xác định nhân viên phụ trách.");
+            }
+
+            ChiTietDatBanId destBookingId = new ChiTietDatBanId();
+            destBookingId.setMaBan(destinationTableId);
+            destBookingId.setMaNhanVien(firstSourceNhanVien.getMaNhanVien());
+            destBookingId.setMaHoaDon(destinationHoaDon.getMaHoaDon()); // Hóa đơn mới đã lưu
+
+            ChiTietDatBan newDestBooking = new ChiTietDatBan();
+            newDestBooking.setId(destBookingId);
+            newDestBooking.setBan(destinationTable);
+            newDestBooking.setNhanVien(firstSourceNhanVien);
+            newDestBooking.setHoaDon(destinationHoaDon);
+            newDestBooking.setTenKhachHang(representativeCustomerName);
+            newDestBooking.setNgayGioDat(LocalDateTime.now());
+            chiTietDatBanRepository.save(newDestBooking);
+        }
+
+
+        // 8. Lưu tất cả các ChiTietHoaDon đã cập nhật/mới tạo của hóa đơn đích
+        chiTietHoaDonRepository.saveAll(destinationItemsMap.values());
+
+        // 9. Cập nhật tổng tiền cho hóa đơn đích
+        // Cộng thêm tiền từ các bàn nguồn vào tổng tiền hiện có (nếu có)
+        destinationHoaDon.setTongTien( (destinationHoaDon.getTongTien() == null ? BigDecimal.ZERO : destinationHoaDon.getTongTien()).add(totalMergedAmount) );
+        hoaDonRepository.save(destinationHoaDon);
+
+        // 10. Cập nhật trạng thái bàn đích (nếu ban đầu trống)
+        if (isDestinationOriginallyEmpty) {
+            destinationTable.setTinhTrang("Có khách"); // Chuyển thành có khách
+            banRepository.save(destinationTable);
+        }
+
+        // 11. Xóa các hóa đơn nguồn (và chi tiết của chúng)
+        chiTietHoaDonRepository.deleteAllByHoaDonIn(sourceHoaDonsToDelete);
+        hoaDonRepository.deleteAll(sourceHoaDonsToDelete);
+
+        System.out.println("Đã gộp thành công vào bàn " + destinationTable.getTenBan());
+    }
 
     @Transactional
     public void moveTable(String sourceTableId, String destinationTableId) {

@@ -1,0 +1,119 @@
+.main-content { background-color: #fff; /* Nền trắng cho khu vực chính */ }
+.table-grid {
+    display: grid;
+    /* Tạo lưới 4 cột, tự động điều chỉnh chiều rộng */
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px; /* Khoảng cách giữa các ô */
+    padding: 15px;
+    border: 1px solid #ccc;
+    background-color: #f8f9fa; /* Nền xám nhạt cho lưới */
+    margin-bottom: 15px;
+}
+.table-item {
+    border: 1px solid #adb5bd; /* Viền xám đậm hơn */
+    padding: 20px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+    min-height: 60px; /* Chiều cao tối thiểu */
+    display: flex; /* Căn giữa nội dung */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.table-item.status-trong { background-color: #e9ecef; color: #495057; }
+.table-item.status-cokhach { background-color: #ced4da; color: #212529; }
+.table-item.status-dattruoc { background-color: #fff3cd; color: #856404; }
+
+.table-item.selected {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+.table-item small { font-weight: normal; font-size: 0.8em; margin-top: 5px; } /* Hiển thị trạng thái */
+
+.action-buttons, .order-buttons {
+    display: flex;
+    gap: 10px; /* Khoảng cách giữa các nút */
+    margin-bottom: 15px;
+    padding: 0 15px; /* Canh lề */
+}
+.action-buttons button, .order-buttons button {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    border-radius: 4px;
+}
+.order-buttons button { flex-grow: 1; } /* Nút hàng dưới chiếm đều không gian */
+.action-buttons button:hover, .order-buttons button:hover { background-color: #e2e6ea; }
+
+/* === CSS MỚI CHO MODAL === */
+.modal {
+    display: none; /* Ẩn ban đầu */
+    position: fixed; /* Che phủ toàn màn hình */
+    z-index: 1000; /* Hiển thị trên cùng */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Cho phép cuộn nếu nội dung dài */
+    background-color: rgba(0,0,0,0.4); /* Nền mờ */
+    padding-top: 60px; /* Khoảng cách từ trên xuống */
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* Canh giữa */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 60%; /* Chiều rộng modal */
+    max-width: 500px;
+    border-radius: 5px;
+    position: relative;
+}
+.close-button {
+    color: #aaa;
+    position: absolute; /* Góc trên phải */
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+}
+.modal h4 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+.modal table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+.modal th, .modal td { border: 1px solid #ddd; padding: 8px; text-align: left;}
+.modal th { background-color: #f2f2f2; }
+.modal .reservation-info { margin-bottom: 20px; padding: 10px; border: 1px dashed #ccc; background-color: #f9f9f9; }
+.modal .modal-actions { text-align: right; }
+.modal .modal-actions button { padding: 8px 15px; cursor: pointer; }
+
+/* CSS specific to move table modal */
+#moveTableModal select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* === CSS MỚI CHO MODAL GỘP BÀN === */
+#mergeTableModal .modal-content { width: 70%; max-width: 700px; } /* Rộng hơn */
+#mergeTableModal .merge-container { display: flex; gap: 20px; }
+#mergeTableModal .table-list-container {
+    flex: 1; /* Chiếm 1 nửa */
+    border: 1px solid #ccc;
+    padding: 10px;
+    height: 250px; /* Giới hạn chiều cao */
+    overflow-y: auto; /* Thêm thanh cuộn */
+}
+#mergeTableModal .table-list-container h5 { margin-top: 0; }
+#mergeTableModal .table-list-container label { display: block; margin-bottom: 8px; cursor: pointer; }
+#mergeTableModal .merge-arrow { display: flex; align-items: center; font-size: 2em; }
