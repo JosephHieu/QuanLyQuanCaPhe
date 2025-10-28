@@ -2,6 +2,7 @@ package com.josephhieu.quanlyquancaphe.controller;
 
 import com.josephhieu.quanlyquancaphe.dto.MergeTablesRequestDTO;
 import com.josephhieu.quanlyquancaphe.dto.MoveTableRequestDTO;
+import com.josephhieu.quanlyquancaphe.dto.SplitTableRequestDTO;
 import com.josephhieu.quanlyquancaphe.dto.TableDetailsDTO;
 import com.josephhieu.quanlyquancaphe.entity.Ban;
 import com.josephhieu.quanlyquancaphe.exception.NotFoundException;
@@ -91,4 +92,24 @@ public class SalesController {
         }
     }
 
+    /**
+     * Endpoint MỚI: Xử lý yêu cầu tách bàn
+     * URL: /sales/split-table (POST)
+     */
+    @PostMapping("/sales/split-table")
+    @ResponseBody
+    public ResponseEntity<?> splitTable(@RequestBody SplitTableRequestDTO request) {
+        try {
+            salesService.splitTable(request.getSourceTableId(), request.getDestinationTableId(), request.getItems());
+            // Trả về 200 OK
+            return ResponseEntity.ok().body("{\"message\": \"Tách bàn thành công!\"}");
+        } catch (NotFoundException | IllegalArgumentException e) {
+            // Trả về 400 Bad Request
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Trả về 500 Internal Server Error
+            return ResponseEntity.internalServerError().body("Lỗi hệ thống khi tách bàn.");
+        }
+    }
 }

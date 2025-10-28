@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderItemDTO {
+    private String maThucDon; // <-- THÊM DÒNG NÀY
     private String tenMon;
     private int soLuong;
 }

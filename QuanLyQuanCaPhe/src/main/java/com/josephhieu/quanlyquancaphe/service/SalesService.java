@@ -1,5 +1,6 @@
 package com.josephhieu.quanlyquancaphe.service;
 
+import com.josephhieu.quanlyquancaphe.dto.SplitTableRequestDTO;
 import com.josephhieu.quanlyquancaphe.entity.id.ChiTietDatBanId;
 import com.josephhieu.quanlyquancaphe.entity.id.ChiTietHoaDonId;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,139 @@ public class SalesService {
 
     @Autowired
     private ChiTietHoaDonRepository chiTietHoaDonRepository;
+
+    /**
+     * PHƯƠNG THỨC MỚI: Xử lý tách bàn
+     */
+    @Transactional
+    public void splitTable(String sourceTableId, String destinationTableId, List<SplitTableRequestDTO.SplitItemDTO> itemsToMove) {
+        // 1. Validation
+        if (itemsToMove == null || itemsToMove.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng chọn món cần tách.");
+        }
+        Ban sourceTable = banRepository.findById(sourceTableId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bàn nguồn: " + sourceTableId));
+        Ban destinationTable = banRepository.findById(destinationTableId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy bàn đích: " + destinationTableId));
+        if ("Trống".equalsIgnoreCase(sourceTable.getTinhTrang())) {
+            throw new IllegalArgumentException("Không thể tách từ bàn trống.");
+        }
+        if (!"Trống".equalsIgnoreCase(destinationTable.getTinhTrang())) {
+            throw new IllegalArgumentException("Bàn đích phải là bàn trống.");
+        }
+
+        // 2. Lấy hóa đơn hoạt động của bàn nguồn
+        ChiTietDatBan sourceBooking = chiTietDatBanRepository.findByBanMaBanAndHoaDonTrangThai(sourceTableId, false)
+                .orElseThrow(() -> new RuntimeException("Bàn nguồn " + sourceTable.getTenBan() + " không có hóa đơn/đặt bàn hoạt động."));
+        HoaDon sourceHoaDon = sourceBooking.getHoaDon();
+        NhanVien responsibleNhanVien = sourceBooking.getNhanVien(); // Nhân viên phụ trách
+
+        // 3. Tạo Hóa đơn MỚI cho bàn đích
+        HoaDon destinationHoaDon = new HoaDon();
+        destinationHoaDon.setNgayGioTao(LocalDateTime.now());
+        destinationHoaDon.setTrangThai(false); // Chưa thanh toán
+        destinationHoaDon.setTongTien(BigDecimal.ZERO); // Bắt đầu từ 0
+        destinationHoaDon = hoaDonRepository.save(destinationHoaDon);
+
+        // 4. Tạo ChiTietDatBan MỚI cho bàn đích
+        ChiTietDatBanId destBookingId = new ChiTietDatBanId();
+        destBookingId.setMaBan(destinationTableId);
+        destBookingId.setMaNhanVien(responsibleNhanVien.getMaNhanVien());
+        destBookingId.setMaHoaDon(destinationHoaDon.getMaHoaDon());
+
+        ChiTietDatBan destBooking = new ChiTietDatBan();
+        destBooking.setId(destBookingId);
+        destBooking.setBan(destinationTable);
+        destBooking.setNhanVien(responsibleNhanVien);
+        destBooking.setHoaDon(destinationHoaDon);
+        destBooking.setTenKhachHang("Tách từ " + sourceTable.getTenBan()); // Tên khách
+        destBooking.setNgayGioDat(LocalDateTime.now());
+        chiTietDatBanRepository.save(destBooking);
+
+
+        // 5. Xử lý chuyển món
+        BigDecimal sourceBillTotal = sourceHoaDon.getTongTien();
+        BigDecimal destBillTotal = BigDecimal.ZERO;
+        List<ChiTietHoaDon> sourceItems = chiTietHoaDonRepository.findByHoaDonMaHoaDon(sourceHoaDon.getMaHoaDon());
+        List<ChiTietHoaDon> itemsToDeleteFromSource = new ArrayList<>(); // Lưu món cần xóa khỏi nguồn
+        List<ChiTietHoaDon> itemsToSaveForDest = new ArrayList<>(); // Lưu món mới cho đích
+
+        for (SplitTableRequestDTO.SplitItemDTO itemToMove : itemsToMove) {
+            if (itemToMove.getSoLuong() <= 0) continue; // Bỏ qua nếu số lượng không hợp lệ
+
+            // Tìm món tương ứng trong hóa đơn nguồn
+            ChiTietHoaDon sourceDetail = sourceItems.stream()
+                    .filter(detail -> detail.getId().getMaThucDon().equals(itemToMove.getMaThucDon()))
+                    .findFirst()
+                    .orElseThrow(() -> new NotFoundException("Món ăn " + itemToMove.getMaThucDon() + " không có trong bàn nguồn."));
+
+            int quantityToMove = itemToMove.getSoLuong();
+            int currentSourceQuantity = sourceDetail.getSoLuong();
+
+            if (quantityToMove > currentSourceQuantity) {
+                throw new IllegalArgumentException("Số lượng tách (" + quantityToMove + ") của món '" + sourceDetail.getThucDon().getTenMon() + "' lớn hơn số lượng hiện có (" + currentSourceQuantity + ").");
+            }
+
+            BigDecimal price = sourceDetail.getGiaTaiThoiDiemBan();
+            BigDecimal amountToMove = price.multiply(BigDecimal.valueOf(quantityToMove));
+
+            // Cập nhật hóa đơn đích
+            destBillTotal = destBillTotal.add(amountToMove);
+            ChiTietHoaDon destDetail = new ChiTietHoaDon();
+            ChiTietHoaDonId destDetailId = new ChiTietHoaDonId();
+            destDetailId.setMaHoaDon(destinationHoaDon.getMaHoaDon());
+            destDetailId.setMaThucDon(sourceDetail.getId().getMaThucDon());
+            destDetail.setId(destDetailId);
+            destDetail.setHoaDon(destinationHoaDon);
+            destDetail.setThucDon(sourceDetail.getThucDon());
+            destDetail.setSoLuong(quantityToMove);
+            destDetail.setGiaTaiThoiDiemBan(price);
+            destDetail.setThanhTien(amountToMove);
+            itemsToSaveForDest.add(destDetail);
+
+            // Cập nhật hóa đơn nguồn
+            sourceBillTotal = sourceBillTotal.subtract(amountToMove);
+            sourceDetail.setSoLuong(currentSourceQuantity - quantityToMove);
+            sourceDetail.setThanhTien(sourceDetail.getThanhTien().subtract(amountToMove));
+
+            // Nếu số lượng nguồn về 0, đánh dấu để xóa
+            if (sourceDetail.getSoLuong() == 0) {
+                itemsToDeleteFromSource.add(sourceDetail);
+                // Loại bỏ khỏi list sourceItems để không save lại
+                // Cần dùng Iterator để tránh ConcurrentModificationException
+                // Hoặc đơn giản là không saveAll mà chỉ save các item còn lại
+            }
+        } // Kết thúc vòng lặp món cần tách
+
+        // 6. Lưu các thay đổi
+        chiTietHoaDonRepository.saveAll(itemsToSaveForDest); // Lưu món mới cho bàn đích
+        chiTietHoaDonRepository.deleteAll(itemsToDeleteFromSource); // Xóa món số lượng 0 khỏi bàn nguồn
+        // Lưu lại các món còn lại của bàn nguồn (nếu không dùng saveAll cho sourceItems)
+        List<ChiTietHoaDon> remainingSourceItems = sourceItems.stream()
+                .filter(item -> item.getSoLuong() > 0)
+                .collect(Collectors.toList());
+        chiTietHoaDonRepository.saveAll(remainingSourceItems);
+
+
+        sourceHoaDon.setTongTien(sourceBillTotal);
+        destinationHoaDon.setTongTien(destBillTotal);
+        hoaDonRepository.save(sourceHoaDon);
+        hoaDonRepository.save(destinationHoaDon);
+
+        // 7. Cập nhật trạng thái bàn đích
+        destinationTable.setTinhTrang("Có khách");
+        banRepository.save(destinationTable);
+
+        // 8. Kiểm tra bàn nguồn còn món không để quyết định trạng thái
+        if (remainingSourceItems.isEmpty()) {
+            sourceTable.setTinhTrang("Trống");
+            // Nếu không còn món, có thể xóa luôn ChiTietDatBan của bàn nguồn? (Tùy logic)
+            // chiTietDatBanRepository.delete(sourceBooking);
+            banRepository.save(sourceTable);
+        } // Nếu còn món thì bàn nguồn vẫn là "Có khách"
+
+        System.out.println("Đã tách thành công từ bàn " + sourceTable.getTenBan() + " sang bàn " + destinationTable.getTenBan());
+    }
 
     @Transactional
     public void mergeTables(List<String> sourceTableIds, String destinationTableId) {
@@ -279,7 +413,10 @@ public class SalesService {
             List<ChiTietHoaDon> chiTietList = chiTietHoaDonRepository.findByHoaDonMaHoaDon(activeHoaDon.getMaHoaDon());
             details.setOrderedItems(
                     chiTietList.stream()
-                            .map(ct -> new OrderItemDTO(ct.getThucDon().getTenMon(), ct.getSoLuong()))
+                            .map(ct -> new OrderItemDTO(
+                                    ct.getId().getMaThucDon(),
+                                    ct.getThucDon().getTenMon(),
+                                    ct.getSoLuong()))
                             .collect(Collectors.toList())
             );
 

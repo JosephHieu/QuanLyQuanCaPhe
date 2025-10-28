@@ -36,7 +36,7 @@
         <div class="action-buttons">
             <button onclick="viewTable()">Xem bàn</button>
             <button onclick="openMoveTableModal()">Chuyển bàn</button>
-            <button onclick="splitTable()">Tách bàn</button>
+            <button onclick="openSplitTableModal()">Tách bàn</button>
             <button onclick="openMergeTableModal()">Gộp bàn</button>
             <button onclick="cancelOrder()">Hủy bàn</button>
             <button onclick="reserveTable()">Đặt bàn</button>
@@ -122,6 +122,61 @@
                 </div>
             </div>
         </div>
+
+        <div id="splitTableModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal('splitTableModal')">&times;</span>
+                <h4 id="splitModalTitle">Tách bàn X</h4>
+
+                <div class="split-container">
+                    <div class="table-section">
+                        <h5 id="sourceSplitTableName">Bàn nguồn: X</h5>
+                        <div class="item-list-container">
+                            <table id="sourceItemsTable">
+                                <thead>
+                                <tr>
+                                    <th>Chọn</th>
+                                    <th>Tên món</th>
+                                    <th>SL Hiện tại</th>
+                                    <th>SL Tách</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="split-arrow">&gt;&gt;&gt;</div>
+
+                    <div class="table-section">
+                        <label for="destinationTableSelectSplit">Chọn bàn cần tách đến (bàn trống):</label>
+                        <select id="destinationTableSelectSplit">
+                            <option value="">-- Chọn bàn trống --</option>
+                        </select>
+                        <h5>Các món sẽ tách sang:</h5>
+                        <div class="item-list-container">
+                            <table id="destinationItemsTable">
+                                <thead>
+                                <tr>
+                                    <th>Tên món</th>
+                                    <th>SL</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr><td colspan="2" style="text-align:center; font-style:italic;">(Chưa chọn món nào)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 20px;">
+                    <button onclick="confirmSplitTable()">Tách</button>
+                    <button onclick="closeModal('splitTableModal')">Hủy</button>
+                </div>
+            </div>
+        </div>
     </main>
 </div>
 
@@ -129,6 +184,7 @@
     let selectedTableId = null;
     let selectedTableName = null;
     let allTablesData = []; // Lưu trữ dữ liệu tất cả bàn để lọc
+    let itemsToSplit = {}; // Lưu trữ món đang chọn để tách { maThucDon: { tenMon: '...', soLuongHienTai: X, soLuongTach: Y } }
 
     // Lưu dữ liệu bàn khi trang load (nếu cần lấy bàn trống từ dữ liệu đã có)
     document.addEventListener('DOMContentLoaded', () => {
@@ -443,6 +499,213 @@
             });
     }
 
+    // --- HÀM MỚI ĐỂ MỞ MODAL TÁCH BÀN ---
+    function openSplitTableModal() {
+        if (!selectedTableId) {
+            alert('Vui lòng chọn bàn muốn tách.');
+            return;
+        }
+        // Kiểm tra bàn đang chọn có trống không
+        const selectedTableElement = document.querySelector(`.table-item[data-maban="${selectedTableId}"]`);
+        if (selectedTableElement && selectedTableElement.classList.contains('status-trong')) {
+            alert('Không thể tách từ bàn trống.');
+            return;
+        }
+        // Lấy danh sách bàn trống
+        const emptyTables = allTablesData.filter(table => table.status === 'Trống');
+        if (emptyTables.length < 1) {
+            alert('Không có bàn trống nào để tách đến.');
+            return;
+        }
+
+
+        console.log('Mở modal tách bàn:', selectedTableId);
+        document.getElementById('splitModalTitle').textContent = `Tách ${selectedTableName}`;
+        document.getElementById('sourceSplitTableName').textContent = `Bàn nguồn: ${selectedTableName}`;
+        itemsToSplit = {}; // Reset
+
+        const destSelect = document.getElementById('destinationTableSelectSplit');
+        destSelect.innerHTML = '<option value="">-- Chọn bàn trống --</option>'; // Reset dropdown
+        emptyTables.forEach(table => { // Populate bàn trống
+            const option = document.createElement('option');
+            option.value = table.id;
+            option.textContent = table.name;
+            destSelect.appendChild(option);
+        });
+
+        const sourceTableBody = document.getElementById('sourceItemsTable').querySelector('tbody');
+        sourceTableBody.innerHTML = '<tr><td colspan="4">Đang tải...</td></tr>'; // Loading
+        updateDestinationItemsTable(); // Hiển thị rỗng ban đầu
+
+        // Gọi API lấy các món của bàn nguồn
+        fetch(`/sales/table/${selectedTableId}`)
+            .then(response => response.ok ? response.json() : Promise.reject('Lỗi lấy món'))
+            .then(data => {
+                sourceTableBody.innerHTML = ''; // Xóa loading
+                if (data.orderedItems && data.orderedItems.length > 0) {
+                    data.orderedItems.forEach(item => {
+                        const row = sourceTableBody.insertRow();
+                        const checkCell = row.insertCell(0);
+                        const nameCell = row.insertCell(1);
+                        const currentQtyCell = row.insertCell(2);
+                        const splitQtyCell = row.insertCell(3);
+
+                        // Checkbox
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.dataset.maThucDon = item.maThucDon; // Dùng mã món thực đơn nếu DTO trả về
+                        // Giả sử DTO trả về maChiTietHoaDon, tenMon, soLuong
+                        // checkbox.dataset.maChiTiet = item.maChiTietHoaDon; // Lưu ID chi tiết nếu cần
+                        checkbox.dataset.tenMon = item.tenMon;
+                        checkbox.dataset.currentQty = item.soLuong;
+                        checkbox.onchange = handleSplitSelectionChange;
+                        checkCell.appendChild(checkbox);
+
+                        nameCell.textContent = item.tenMon;
+                        currentQtyCell.textContent = item.soLuong;
+
+                        // Input số lượng tách
+                        const splitInput = document.createElement('input');
+                        splitInput.type = 'number';
+                        splitInput.min = '0';
+                        splitInput.max = item.soLuong; // Tối đa là số lượng hiện có
+                        splitInput.value = '0';
+                        splitInput.dataset.maThucDon = item.maThucDon; // Dùng mã món thực đơn
+                        // splitInput.dataset.maChiTiet = item.maChiTietHoaDon;
+                        splitInput.disabled = true; // Chỉ bật khi checkbox được chọn
+                        splitInput.onchange = handleSplitQuantityChange;
+                        splitQtyCell.appendChild(splitInput);
+                    });
+                } else {
+                    sourceTableBody.innerHTML = '<tr><td colspan="4">Bàn chưa gọi món.</td></tr>';
+                }
+                openModal('splitTableModal');
+            })
+            .catch(error => {
+                console.error('Lỗi khi lấy món của bàn nguồn:', error);
+                alert('Không thể lấy danh sách món của bàn này.');
+            });
+    }
+
+    // --- HÀM XỬ LÝ KHI CHECKBOX THAY ĐỔI ---
+    function handleSplitSelectionChange(event) {
+        const checkbox = event.target;
+        const row = checkbox.closest('tr');
+        const splitInput = row.querySelector('input[type="number"]');
+        const maThucDon = checkbox.dataset.maThucDon;
+        const tenMon = checkbox.dataset.tenMon;
+        const currentQty = parseInt(checkbox.dataset.currentQty);
+
+        if (checkbox.checked) {
+            splitInput.disabled = false;
+            splitInput.value = '1'; // Mặc định tách 1
+            itemsToSplit[maThucDon] = { tenMon: tenMon, soLuongHienTai: currentQty, soLuongTach: 1 };
+        } else {
+            splitInput.disabled = true;
+            splitInput.value = '0';
+            delete itemsToSplit[maThucDon];
+        }
+        updateDestinationItemsTable();
+    }
+
+    // --- HÀM XỬ LÝ KHI SỐ LƯỢNG TÁCH THAY ĐỔI ---
+    function handleSplitQuantityChange(event) {
+        const input = event.target;
+        const maThucDon = input.dataset.maThucDon;
+        let soLuongTach = parseInt(input.value) || 0;
+        const maxQty = parseInt(input.max);
+
+        // Validate số lượng
+        if (soLuongTach < 0) soLuongTach = 0;
+        if (soLuongTach > maxQty) soLuongTach = maxQty;
+        input.value = soLuongTach; // Cập nhật lại input nếu giá trị không hợp lệ
+
+        if (itemsToSplit[maThucDon]) { // Chỉ cập nhật nếu món đã được chọn
+            itemsToSplit[maThucDon].soLuongTach = soLuongTach;
+            if (soLuongTach === 0) { // Nếu giảm về 0 thì bỏ chọn luôn
+                const checkbox = input.closest('tr').querySelector('input[type="checkbox"]');
+                checkbox.checked = false;
+                input.disabled = true;
+                delete itemsToSplit[maThucDon];
+            }
+        }
+        updateDestinationItemsTable();
+    }
+
+    // --- HÀM CẬP NHẬT BẢNG MÓN ĐÍCH ---
+    function updateDestinationItemsTable() {
+        const destTableBody = document.getElementById('destinationItemsTable').querySelector('tbody');
+        destTableBody.innerHTML = ''; // Xóa cũ
+        let hasItems = false;
+        for (const maThucDon in itemsToSplit) {
+            const item = itemsToSplit[maThucDon];
+            if (item.soLuongTach > 0) {
+                hasItems = true;
+                const row = destTableBody.insertRow();
+                row.insertCell(0).textContent = item.tenMon;
+                row.insertCell(1).textContent = item.soLuongTach;
+            }
+        }
+        if (!hasItems) {
+            destTableBody.innerHTML = '<tr><td colspan="2" style="text-align:center; font-style:italic;">(Chưa chọn món nào)</td></tr>';
+        }
+    }
+
+    // --- HÀM XÁC NHẬN TÁCH BÀN ---
+    function confirmSplitTable() {
+        const destinationTableId = document.getElementById('destinationTableSelectSplit').value;
+        const itemsToMove = [];
+
+        for (const maThucDon in itemsToSplit) {
+            const item = itemsToSplit[maThucDon];
+            if (item.soLuongTach > 0) {
+                itemsToMove.push({ maThucDon: maThucDon, soLuong: item.soLuongTach });
+            }
+        }
+
+        if (!destinationTableId) {
+            alert('Vui lòng chọn bàn trống để tách đến.');
+            return;
+        }
+        if (itemsToMove.length === 0) {
+            alert('Vui lòng chọn ít nhất một món và số lượng > 0 để tách.');
+            return;
+        }
+
+
+        console.log(`Xác nhận tách bàn ${selectedTableId} sang ${destinationTableId} với các món:`, itemsToMove);
+
+        // Gọi API backend
+        fetch('/sales/split-table', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content')]: document.querySelector('meta[name="_csrf"]')?.getAttribute('content')
+            },
+            body: JSON.stringify({
+                sourceTableId: selectedTableId,
+                destinationTableId: destinationTableId,
+                items: itemsToMove // Gửi dạng { sourceTableId: "id1", destinationTableId: "id2", items: [ {maThucDon: "idm1", soLuong: 1}, ...] }
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text || 'Tách bàn thất bại.') });
+                }
+                return response.json(); // Hoặc text()
+            })
+            .then(data => {
+                console.log('Tách bàn thành công:', data);
+                closeModal('splitTableModal');
+                alert('Tách bàn thành công!');
+                window.location.reload(); // Tải lại trang
+            })
+            .catch(error => {
+                console.error('Lỗi khi tách bàn:', error);
+                alert(`Lỗi: ${error.message}`);
+            });
+    }
+
     function cancelOrder() { console.log('Hủy bàn:', selectedTableId); }
     function reserveTable() { console.log('Đặt bàn:', selectedTableId); }
     function selectMenu() { console.log('Chọn thực đơn cho bàn:', selectedTableId); }
@@ -454,9 +717,11 @@
         const viewModal = document.getElementById('viewTableModal');
         const moveModal = document.getElementById('moveTableModal');
         const mergeModal = document.getElementById('mergeTableModal');
+        const splitModal = document.getElementById('splitTableModal'); // Thêm
         if (event.target == viewModal) closeModal('viewTableModal');
         if (event.target == moveModal) closeModal('moveTableModal');
         if (event.target == mergeModal) closeModal('mergeTableModal');
+        if (event.target == splitModal) closeModal('splitTableModal'); // Thêm
     }
 </script>
 </body>

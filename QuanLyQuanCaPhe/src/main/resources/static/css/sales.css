@@ -117,3 +117,19 @@
 #mergeTableModal .table-list-container h5 { margin-top: 0; }
 #mergeTableModal .table-list-container label { display: block; margin-bottom: 8px; cursor: pointer; }
 #mergeTableModal .merge-arrow { display: flex; align-items: center; font-size: 2em; }
+
+/* === CSS MỚI CHO MODAL TÁCH BÀN === */
+#splitTableModal .modal-content { width: 80%; max-width: 800px; } /* Rộng hơn */
+#splitTableModal .split-container { display: flex; gap: 20px; }
+#splitTableModal .table-section { flex: 1; /* Chia đều không gian */ }
+#splitTableModal .item-list-container {
+    border: 1px solid #ccc; padding: 10px; height: 250px; overflow-y: auto; margin-top: 5px;
+}
+#splitTableModal .item-list-container table { width: 100%; }
+#splitTableModal .item-list-container th { position: sticky; top: 0; background-color: #f2f2f2; z-index: 1;}
+#splitTableModal .item-list-container td { vertical-align: middle; padding: 5px;}
+#splitTableModal .item-list-container input[type="checkbox"] { margin-right: 5px; }
+#splitTableModal .item-list-container input[type="number"] { width: 50px; text-align: center; margin-left: auto; /* Đẩy sang phải */}
+#splitTableModal .split-arrow { display: flex; align-items: center; font-size: 2em; padding: 0 10px;}
+#splitTableModal #destinationTableSelectSplit { width: 100%; padding: 8px; margin-bottom: 10px; }
+#splitTableModal #destinationItemsTable td:nth-child(2) { text-align: right; } /* Căn phải SL */
