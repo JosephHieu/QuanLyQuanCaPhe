@@ -1,0 +1,55 @@
+/* CSS cho bảng (có thể dùng chung với trang Nhân viên) */
+.main-content table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.main-content th, .main-content td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; vertical-align: middle;}
+.main-content th { background-color: #f8f9fa; font-weight: bold; border-color: #dee2e6; color: #495057;} /* Style header giống ảnh */
+.main-content tr:nth-child(even) { background-color: #f9f9f9; }
+.main-content td.number-col { text-align: right; } /* Căn phải số */
+/* CSS cho nút Thêm mới (nếu cần) */
+.button-add { display: inline-block; padding: 8px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; border: none; cursor: pointer; }
+.button-add:hover { background-color: #0056b3; }
+/* Style cho header table giống ảnh */
+.main-content th { position: relative; } /* Để đặt mũi tên */
+.main-content th .sort-arrow {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+    color: #6c757d;
+}
+
+/* ... (CSS của bạn cho bảng) ... */
+/* CSS cho các nút hành động */
+.actions a {
+    text-decoration: none;
+    padding: 4px 8px;
+    margin-right: 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    display: inline-block; /* Đảm bảo nút nằm trên 1 dòng */
+}
+.btn-edit { background-color: #ffc107; color: #333; border: 1px solid #d39e00;}
+.btn-delete { background-color: #dc3545; color: white; border: 1px solid #c82333;}
+.btn-edit:hover { background-color: #e0a800; }
+.btn-delete:hover { background-color: #c82333; }
+
+/* CSS tương tự form thêm nhân viên */
+.main-content form { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 600px; margin: 20px auto; }
+.form-grid { display: grid; grid-template-columns: 100px 1fr; gap: 15px; align-items: center; margin-bottom: 15px; }
+.form-grid label { font-weight: bold; text-align: right; }
+.form-grid label.required::after { content: " *"; color: red; }
+.form-grid input[type="text"],
+.form-grid input[type="date"],
+.form-grid input[type="number"] { width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+.form-grid .input-group { display: flex; align-items: center; } /* Cho Ngày mua và Số lượng */
+.form-grid .input-group input { flex-grow: 1; }
+.form-grid .input-group .calendar-icon,
+.form-grid .input-group .spin-buttons { margin-left: 5px; /* Adjust as needed */ } /* Placeholder for icons/buttons */
+
+.form-actions { text-align: center; margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;}
+.form-actions button, .form-actions a { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; text-decoration: none; display: inline-block; margin: 0 10px;}
+.form-actions button { background-color: #f0f0f0; border: 1px solid #aaa; color: #333;}
+.form-actions a { background-color: #ccc; border: 1px solid #bbb; color: #333; line-height: normal; }
+.form-actions button:hover, .form-actions a:hover { background-color: #ddd; }
+.required-note { text-align: center; color: red; font-style: italic; margin-top: 15px; }
+.global-error-message { color: red; background-color: #ffe0e0; border: 1px solid red; padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center;}

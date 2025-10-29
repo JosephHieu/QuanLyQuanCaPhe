@@ -70,9 +70,35 @@
                 </ul>
             </li>
 
-            <li>
-                <a th:href="@{/admin/thietbi}"
-                   th:classappend="${currentPage == 'admin_thietbi' ? 'active' : ''}">Quản lý trang thiết bị</a>
+            <li class="has-submenu"> <a th:href="@{/admin/thietbi}"
+                                        th:classappend="${currentPage != null && #strings.startsWith(currentPage, 'admin_thietbi') ? 'active' : ''}">
+                Quản lý trang thiết bị
+            </a>
+                <ul class="submenu"
+                    th:if="${currentPage != null && #strings.startsWith(currentPage, 'admin_thietbi')}">
+                    <li>
+                        <a th:href="@{/admin/thietbi}" th:classappend="${currentPage == 'admin_thietbi_list' ? 'active-sub' : ''}">
+                            » Xem danh sách thiết bị
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/thietbi/them}" th:classappend="${currentPage == 'admin_thietbi_them' ? 'active-sub' : ''}">
+                            » Thêm thiết bị
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/thietbi}"
+                           th:classappend="${currentPage == 'admin_thietbi_chinhsua' ? 'active-sub' : ''}">
+                            » Chỉnh sửa thiết bị
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/thietbi}"
+                           th:classappend="${currentPage == 'admin_thietbi_xoa' ? 'active-sub' : ''}">
+                            » Xóa thiết bị
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li>
                 <a th:href="@{/admin/khohang}"

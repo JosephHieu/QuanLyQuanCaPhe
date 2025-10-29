@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${thietBi.maThietBi == null ? 'Thêm Thiết bị' : 'Chỉnh sửa Thiết bị'}"></title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <link rel="stylesheet" th:href="@{/css/devices.css}" />
+
+</head>
+<body>
+<div th:insert="~{fragments/header :: header}"></div>
+<div class="page-container">
+    <div class="sidebar-wrapper">
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
+    </div>
+
+    <main class="main-content">
+        <div class="breadcrumb" th:text="${thietBi.maThietBi == null ? 'Thêm thiết bị' : 'Chỉnh sửa thiết bị'}"></div>
+
+        <form th:action="${thietBi.maThietBi == null ? '/admin/thietbi/save' : '/admin/thietbi/update'}"
+              th:object="${thietBi}" method="post">
+
+            <input type="hidden" th:if="${thietBi.maThietBi != null}" th:field="*{maThietBi}" />
+
+            <div th:if="${errorMessage}" class="global-error-message">
+                <strong th:text="${errorMessage}"></strong>
+            </div>
+
+            <div class="form-grid">
+                <label for="tenThietBi" class="required">Tên thiết bị:</label>
+                <input type="text" id="tenThietBi" th:field="*{tenThietBi}" required />
+
+                <label for="ngayMua" class="required">Ngày mua:</label>
+                <div class="input-group">
+                    <input type="date" id="ngayMua" th:field="*{ngayMua}" required />
+                    <span class="calendar-icon">🗓️</span> </div>
+
+
+                <label for="soLuong" class="required">Số lượng:</label>
+                <div class="input-group">
+                    <input type="number" id="soLuong" th:field="*{soLuong}" min="1" required />
+                    <span class="spin-buttons">↕️</span> </div>
+
+
+                <label for="donGiaMua" class="required">Đơn giá:</label>
+                <input type="number" id="donGiaMua" th:field="*{donGiaMua}" min="0" step="1000" required placeholder="Ví dụ: 500000" />
+
+            </div>
+
+            <div class="required-note">(*): Các trường bắt buộc nhập</div>
+
+            <div class="form-actions">
+                <button type="submit" th:text="${thietBi.maThietBi == null ? 'Thêm' : 'Lưu'}"></button>
+                <a th:href="@{/admin/thietbi}">Hủy</a>
+            </div>
+
+        </form>
+    </main>
+</div>
+</body>
+</html>
