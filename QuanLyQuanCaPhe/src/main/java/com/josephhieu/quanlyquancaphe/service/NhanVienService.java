@@ -9,6 +9,7 @@ import com.josephhieu.quanlyquancaphe.repository.NhanVienRepository;
 
 import com.josephhieu.quanlyquancaphe.repository.TaiKhoanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.josephhieu.quanlyquancaphe.exception.NotFoundException;
 import org.springframework.stereotype.Service;
@@ -183,6 +184,36 @@ public class NhanVienService {
         nhanVienRepository.save(originalNhanVien); // Lưu thay đổi của NhanVien
         if (taiKhoanUpdated) {
             taiKhoanRepository.save(taiKhoan); // Chỉ lưu TaiKhoan nếu ảnh đã thay đổi
+        }
+    }
+
+    @Transactional
+    public void deleteNhanVien(String maNhanVien) throws NotFoundException, DataIntegrityViolationException {
+
+        // 1. Tìm nhân viên
+        NhanVien nhanVien = nhanVienRepository.findById(maNhanVien)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy nhân viên để xóa: " + maNhanVien));
+
+        // 2. Lấy tài khoản liên quan
+        TaiKhoan taiKhoan = nhanVien.getTaiKhoan();
+
+        try {
+            // 3. Xóa NhanVien trước
+            // (Phải đảm bảo NhanVien không còn liên kết ở đâu khác (ví dụ: DonXuat, ChiTietDatBan...))
+            // Nếu có lỗi khóa ngoại, CSDL sẽ ném DataIntegrityViolationException
+            nhanVienRepository.delete(nhanVien);
+            System.out.println("Đã xóa nhân viên ID: " + maNhanVien);
+
+            // 4. Nếu xóa NhanVien thành công, xóa TaiKhoan
+            if (taiKhoan != null) {
+                taiKhoanRepository.delete(taiKhoan);
+                System.out.println("Đã xóa tài khoản liên quan ID: " + taiKhoan.getMaTaiKhoan());
+            }
+
+        } catch (DataIntegrityViolationException e) {
+            // 5. Bắt lỗi nếu CSDL không cho xóa
+            System.err.println("Lỗi xóa nhân viên do ràng buộc: " + e.getMessage());
+            throw new DataIntegrityViolationException("Không thể xóa nhân viên này vì đang có liên kết (ví dụ: đã lập hóa đơn, đơn xuất/nhập).");
         }
     }
 }

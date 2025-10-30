@@ -157,9 +157,11 @@
                         <span th:if="${nhanVien.maNhanVien == null}" class="required">Mật khẩu:</span>
                         <span th:if="${nhanVien.maNhanVien != null}">Mật khẩu mới:</span>
                     </label>
-                    <input type="password" id="matKhau" name="matKhauMoi"
-                           th:placeholder="${nhanVien.maNhanVien != null ? '(Để trống nếu không đổi)' : ''}"
-                           th:required="${nhanVien.maNhanVien == null}" />
+                    <div> <input type="password" id="matKhau" name="matKhauMoi"
+                                 th:placeholder="${nhanVien.maNhanVien != null ? '(Để trống nếu không đổi)' : ''}"
+                                 th:required="${nhanVien.maNhanVien == null}" />
+                        <span th:if="${passwordError}" th:text="${passwordError}" class="error-message"></span>
+                    </div>
 
                     <div class="form-actions">
                         <button type="submit" th:text="${nhanVien.maNhanVien == null ? 'Thêm' : 'Lưu'}"></button>

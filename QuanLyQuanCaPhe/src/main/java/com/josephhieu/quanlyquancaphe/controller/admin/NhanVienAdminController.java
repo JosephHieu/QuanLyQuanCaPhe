@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,7 +30,7 @@ public class NhanVienAdminController {
     public String saveNhanVien(
             @ModelAttribute("nhanVien") NhanVien nhanVien,
             @RequestParam("tenDangNhap") String tenDangNhap,
-            @RequestParam("matKhau") String matKhau,
+            @RequestParam("matKhauMoi") String matKhau,
             @RequestParam("maChucVu") String maChucVu, // Nhận maChucVu
             @RequestParam("anhFile") MultipartFile anhFile,
             Model model
@@ -37,6 +38,23 @@ public class NhanVienAdminController {
 
         System.out.println(">>> Controller received maChucVu: [" + maChucVu + "]");
 
+        // --- KIỂM TRA MẬT KHẨU (CHO NGƯỜI DÙNG MỚI) ---
+        if (matKhau == null || matKhau.trim().isEmpty()) { // <-- SỬA 2: Thêm kiểm tra mật khẩu
+            model.addAttribute("passwordError", "Mật khẩu là bắt buộc khi thêm mới."); // Thêm lỗi mật khẩu
+            // Gửi lại dữ liệu form
+            model.addAttribute("nhanVien", nhanVien);
+            model.addAttribute("dsChucVu", chucVuService.getAllChucVu());
+            model.addAttribute("currentPage", "admin_nhanvien_them");
+            // Giữ lại lỗi tên đăng nhập nếu có
+            if (model.containsAttribute("usernameError")) {
+                model.addAttribute("usernameError", model.getAttribute("usernameError"));
+            }
+            // Giữ lại lỗi chức vụ nếu có
+            if (model.containsAttribute("chucVuError")) {
+                model.addAttribute("chucVuError", model.getAttribute("chucVuError"));
+            }
+            return "admin/nhanvien/form";
+        }
 
         // --- KIỂM TRA CHỨC VỤ ---
         if (maChucVu == null || maChucVu.isEmpty()) {
@@ -216,5 +234,28 @@ public class NhanVienAdminController {
 
         // Trả về file HTML của trang tìm kiếm
         return "admin/nhanvien/search";
+    }
+
+    /**
+     * PHƯƠNG THỨC MỚI: Xử lý xóa nhân viên
+     * URL: /admin/nhanvien/delete/{id} (GET)
+     */
+    @GetMapping("/admin/nhanvien/delete/{id}") // <-- ĐƯỜNG DẪN KHÔNG CÓ /admin
+    public String deleteNhanVien(@PathVariable("id") String maNhanVien, RedirectAttributes redirectAttributes) {
+        try {
+            nhanVienService.deleteNhanVien(maNhanVien);
+            // Gửi thông báo thành công
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa nhân viên thành công!");
+        } catch (NotFoundException | DataIntegrityViolationException e) {
+            // Gửi thông báo lỗi (không tìm thấy hoặc lỗi ràng buộc)
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            // Lỗi chung
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "Đã xảy ra lỗi không mong muốn khi xóa.");
+        }
+
+        // Luôn chuyển hướng về trang danh sách nhân viên
+        return "redirect:/admin/nhanvien";
     }
 }

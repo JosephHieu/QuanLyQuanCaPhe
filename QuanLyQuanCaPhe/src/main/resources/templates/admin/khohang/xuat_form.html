@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Xuất Hàng hóa</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <link rel="stylesheet" th:href="@{/css/products.css}" />
+
+</head>
+<body>
+<div th:insert="~{fragments/header :: header}"></div>
+<div class="page-container">
+    <div class="sidebar-wrapper">
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
+    </div>
+
+    <main class="main-content">
+        <div class="breadcrumb">Xuất hàng hóa</div>
+
+        <form th:action="@{/admin/khohang/xuat/save}" method="post">
+
+            <div th:if="${errorMessage}" class="global-error-message">
+                <strong th:text="${errorMessage}"></strong>
+            </div>
+
+            <div class="form-grid">
+                <label for="maHangHoa">Tên hàng:</label>
+                <select id="maHangHoa" name="maHangHoa" required onchange="updateUnit()">
+                    <option value="">-- Chọn hàng hóa --</option>
+                    <option th:each="hh : ${dsHangHoa}"
+                            th:value="${hh.maHangHoa}"
+                            th:text="${hh.tenHangHoa + ' (Tồn: ' + hh.soLuong + ')'}"
+                            th:attr="data-unit=${hh.donViTinh?.tenDonVi}, data-max=${hh.soLuong}"
+                            th:selected="${hh.maHangHoa == maHangHoaSelected}">
+                    </option>
+                </select>
+
+                <label for="soLuong">Số lượng:</label>
+                <div class="input-group">
+                    <input type="number" id="soLuong" name="soLuong" min="1" required th:value="${soLuong ?: 1}" />
+                    <span id="unitDisplay">(đơn vị)</span> <span class="spin-buttons">↕️</span>
+                </div>
+
+                <label for="ngayXuat">Ngày xuất:</label>
+                <div class="input-group">
+                    <input type="date" id="ngayXuat" name="ngayXuat" required th:value="${ngayXuat ?: ngayXuatDefault}" />
+                    <span class="calendar-icon">🗓️</span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit">Đồng ý</button>
+                <a th:href="@{/admin/khohang}">Hủy</a>
+            </div>
+        </form>
+    </main>
+</div>
+
+<script>
+    const hangHoaSelect = document.getElementById('maHangHoa');
+    const soLuongInput = document.getElementById('soLuong');
+    const unitDisplay = document.getElementById('unitDisplay');
+
+    function updateUnit() {
+        const selectedOption = hangHoaSelect.options[hangHoaSelect.selectedIndex];
+        const unit = selectedOption.getAttribute('data-unit');
+        const max = selectedOption.getAttribute('data-max');
+
+        unitDisplay.textContent = unit ? `(${unit})` : '(đơn vị)';
+        if (max) {
+            soLuongInput.max = max; // Set max cho input số lượng
+            // Optional: Reset số lượng nếu vượt quá max
+            if (parseInt(soLuongInput.value) > parseInt(max)) {
+                soLuongInput.value = max;
+            }
+        } else {
+            soLuongInput.removeAttribute('max');
+        }
+    }
+
+    // Gọi lần đầu khi trang load để hiển thị đúng đơn vị (nếu có hàng được chọn sẵn do lỗi)
+    updateUnit();
+
+    // Cập nhật max khi số lượng thay đổi (để đảm bảo không vượt quá)
+    soLuongInput.addEventListener('input', function() {
+        const max = parseInt(this.max);
+        if (!isNaN(max) && parseInt(this.value) > max) {
+            this.value = max;
+        }
+        if (parseInt(this.value) < 1 && this.value !== '') {
+            this.value = 1; // Giữ tối thiểu là 1
+        }
+    });
+
+</script>
+</body>
+</html>

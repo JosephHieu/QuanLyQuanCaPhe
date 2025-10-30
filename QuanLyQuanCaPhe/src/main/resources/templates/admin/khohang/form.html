@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${hangHoa != null && hangHoa.maHangHoa != null ? 'Chỉnh sửa Hàng hóa' : 'Nhập Hàng hóa'}"></title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <link rel="stylesheet" th:href="@{/css/products.css}" />
+
+</head>
+<body>
+<div th:insert="~{fragments/header :: header}"></div>
+<div class="page-container">
+    <div class="sidebar-wrapper">
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
+    </div>
+
+    <main class="main-content">
+        <div class="breadcrumb" th:text="${hangHoa != null && hangHoa.maHangHoa != null ? 'Chỉnh sửa hàng hóa' : 'Nhập hàng hóa'}"></div>
+
+        <form th:action="${hangHoa != null && hangHoa.maHangHoa != null ? '/admin/khohang/update' : '/admin/khohang/nhap/save'}"
+              th:object="${hangHoa}" method="post">
+            <input type="hidden" th:if="${hangHoa != null && hangHoa.maHangHoa != null}" th:field="*{maHangHoa}" />
+
+            <div th:if="${errorMessage}" class="global-error-message">
+                <strong th:text="${errorMessage}"></strong>
+            </div>
+
+            <div class="form-grid">
+                <label for="tenHangHoa">Tên hàng:</label>
+                <input type="text" id="tenHangHoa" th:field="*{tenHangHoa}" required />
+
+                <label for="soLuong">Số lượng:</label>
+                <div class="input-group">
+                    <input type="number" id="soLuong" th:field="*{soLuong}" min="0" required />
+                    <span class="spin-buttons">↕️</span>
+                </div>
+
+                <label for="donGia">Đơn giá:</label>
+                <input type="number" id="donGia" th:field="*{donGia}" min="0" step="1000" required placeholder="Ví dụ: 55000" />
+
+                <label for="maDonViTinh">Đơn vị:</label>
+                <select id="maDonViTinh" name="maDonViTinh" required>
+                    <option value="">-- Chọn đơn vị --</option>
+                    <option th:each="dvt : ${dsDonViTinh}"
+                            th:value="${dvt.maDonViTinh}"
+                            th:text="${dvt.tenDonVi}"
+                            th:selected="${hangHoa?.donViTinh != null && hangHoa.donViTinh.maDonViTinh == dvt.maDonViTinh}">
+                    </option>
+                </select>
+
+                <th:block th:if="${hangHoa == null || hangHoa.maHangHoa == null}">
+                    <label for="ngayNhap">Ngày nhập:</label>
+                    <div class="input-group">
+                        <input type="date" id="ngayNhap" name="ngayNhap" required th:value="${ngayNhap ?: ngayNhapDefault}" />
+                        <span class="calendar-icon">🗓️</span>
+                    </div>
+                </th:block>
+
+            </div>
+            <div class="form-actions">
+                <button type="submit" th:text="${hangHoa != null && hangHoa.maHangHoa != null ? 'Lưu' : 'Đồng ý'}"></button>
+                <a th:href="@{/admin/khohang}">Hủy</a>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>

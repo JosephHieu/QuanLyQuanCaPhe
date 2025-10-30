@@ -100,9 +100,47 @@
                     </li>
                 </ul>
             </li>
-            <li>
+            <li class="has-submenu">
                 <a th:href="@{/admin/khohang}"
-                   th:classappend="${currentPage == 'admin_khohang' ? 'active' : ''}">Quản lý kho hàng</a>
+                   th:classappend="${currentPage != null && #strings.startsWith(currentPage, 'admin_khohang') ? 'active' : ''}">
+                    Quản lý kho hàng
+                </a>
+                <ul class="submenu"
+                    th:if="${currentPage != null && #strings.startsWith(currentPage, 'admin_khohang')}">
+                    <li>
+                        <a th:href="@{/admin/khohang}"
+                           th:classappend="${currentPage == 'admin_khohang_list' ? 'active-sub' : ''}">
+                            » Xem danh sách hàng hóa
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/khohang/nhap}" th:classappend="${currentPage == 'admin_khohang_nhap' ? 'active-sub' : ''}">
+                            » Nhập hàng hóa
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/khohang/xuat}" th:classappend="${currentPage == 'admin_khohang_xuat' ? 'active-sub' : ''}">
+                            » Xuất hàng hóa
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/khohang/timkiem}"
+                           th:classappend="${currentPage == 'admin_khohang_chinhsua' ? 'active-sub' : ''}">
+                            » Chỉnh sửa hàng hóa
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/khohang/timkiem}"
+                           th:classappend="${currentPage == 'admin_khohang_xoa' ? 'active-sub' : ''}">
+                            » Xóa hàng hóa
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/khohang/timkiem}" th:classappend="${currentPage == 'admin_khohang_timkiem' ? 'active-sub' : ''}">
+                            » Tìm kiếm hàng hóa
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li>
                 <a th:href="@{/admin/thucdon}"

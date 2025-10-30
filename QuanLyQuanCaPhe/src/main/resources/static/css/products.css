@@ -1,0 +1,83 @@
+/* CSS cho bảng (tương tự các trang trước) */
+.main-content table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.main-content th, .main-content td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; vertical-align: middle;}
+.main-content th { background-color: #f8f9fa; font-weight: bold; border-color: #dee2e6; color: #495057;}
+.main-content tr:nth-child(even) { background-color: #f9f9f9; }
+.main-content td.number-col { text-align: right; }
+.actions a { text-decoration: none; padding: 4px 8px; margin-right: 5px; border-radius: 3px; font-size: 0.9em;}
+.btn-edit { background-color: #ffc107; color: #333; }
+.btn-delete { background-color: #dc3545; color: white; }
+
+/* CSS tương tự form thêm thiết bị */
+.main-content form { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 600px; margin: 20px auto; }
+.form-grid { display: grid; grid-template-columns: 100px 1fr; gap: 15px; align-items: center; margin-bottom: 15px; }
+.form-grid label { font-weight: bold; text-align: right; }
+/* .form-grid label.required::after { content: " *"; color: red; } */ /* Giao diện không có dấu * */
+.form-grid input[type="text"],
+.form-grid input[type="date"],
+.form-grid input[type="number"],
+.form-grid select { width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+.form-grid .input-group { display: flex; align-items: center; }
+.form-grid .input-group input { flex-grow: 1; }
+.form-grid .input-group .calendar-icon,
+.form-grid .input-group .spin-buttons { margin-left: 5px; }
+
+.form-actions { text-align: center; margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;}
+.form-actions button, .form-actions a { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; text-decoration: none; display: inline-block; margin: 0 10px;}
+.form-actions button { background-color: #f0f0f0; border: 1px solid #aaa; color: #333;}
+.form-actions a { background-color: #ccc; border: 1px solid #bbb; color: #333; line-height: normal; }
+.form-actions button:hover, .form-actions a:hover { background-color: #ddd; }
+.global-error-message { color: red; background-color: #ffe0e0; border: 1px solid red; padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center;}
+
+/* CSS tương tự form nhập hàng */
+.main-content form { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 600px; margin: 20px auto; }
+.form-grid { display: grid; grid-template-columns: 100px 1fr; gap: 15px; align-items: center; margin-bottom: 15px; }
+.form-grid label { font-weight: bold; text-align: right; }
+.form-grid input[type="text"], /* Thêm text cho span đơn vị */
+.form-grid input[type="date"],
+.form-grid input[type="number"],
+.form-grid select,
+.form-grid span { width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+.form-grid select { width: 100%; } /* Select chiếm đủ */
+.form-grid span { border: none; padding-left: 0; } /* Style cho span đơn vị */
+.form-grid .input-group { display: flex; align-items: center; gap: 5px;}
+.form-grid .input-group input { flex-grow: 1; width: auto;} /* Input số lượng co lại */
+.form-grid .input-group span { width: auto; flex-shrink: 0; border: none;} /* Span đơn vị */
+.form-grid .input-group .calendar-icon,
+.form-grid .input-group .spin-buttons { margin-left: 5px; }
+
+.form-actions { text-align: center; margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;}
+.form-actions button, .form-actions a { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; text-decoration: none; display: inline-block; margin: 0 10px;}
+.form-actions button { background-color: #f0f0f0; border: 1px solid #aaa; color: #333;}
+.form-actions a { background-color: #ccc; border: 1px solid #bbb; color: #333; line-height: normal; }
+.form-actions button:hover, .form-actions a:hover { background-color: #ddd; }
+.global-error-message { color: red; background-color: #ffe0e0; border: 1px solid red; padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center;}
+
+/* CSS tương tự form nhập hàng trước */
+.main-content form { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 600px; margin: 20px auto; }
+.form-grid { display: grid; grid-template-columns: 100px 1fr; gap: 15px; align-items: center; margin-bottom: 15px; }
+.form-grid label { font-weight: bold; text-align: right; }
+.form-grid input, .form-grid select { width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+.form-grid .input-group { display: flex; align-items: center; gap: 5px; }
+.form-grid .input-group input { flex-grow: 1; width: auto;}
+.form-grid .input-group .calendar-icon, .form-grid .input-group .spin-buttons { margin-left: 5px; }
+.form-actions { text-align: center; margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;}
+.form-actions button, .form-actions a { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; text-decoration: none; display: inline-block; margin: 0 10px;}
+.form-actions button { background-color: #f0f0f0; border: 1px solid #aaa; color: #333;}
+.form-actions a { background-color: #ccc; border: 1px solid #bbb; color: #333; line-height: normal; }
+.form-actions button:hover, .form-actions a:hover { background-color: #ddd; }
+.global-error-message { color: red; background-color: #ffe0e0; border: 1px solid red; padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center;}
+/* Thêm required-note nếu cần */
+.required-note { text-align: center; color: red; font-style: italic; margin-top: 15px; }
+
+.search-form { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 15px; background-color: #fff; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-form input[type="text"] { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+.search-form button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+/* CSS cho bảng kết quả (dùng chung) */
+.main-content table { width: 100%; border-collapse: collapse; margin-top: 10px; background-color: #fff; }
+.main-content th, .main-content td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; }
+.main-content th { background-color: #f8f9fa; font-weight: bold; }
+.main-content td.number-col { text-align: right; }
+.actions a { text-decoration: none; padding: 4px 8px; margin-right: 5px; border-radius: 3px; font-size: 0.9em;}
+.btn-edit { background-color: #ffc107; color: #333; }
+.btn-delete { background-color: #dc3545; color: white; }
