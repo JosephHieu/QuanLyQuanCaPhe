@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách Thực đơn</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <link rel="stylesheet" th:href="@{/css/menu.css}" />
+
+</head>
+<body>
+<div th:insert="~{fragments/header :: header}"></div>
+<div class="page-container">
+    <div class="sidebar-wrapper">
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
+    </div>
+    <main class="main-content">
+        <div class="breadcrumb">Danh sách thực đơn</div>
+
+        <div th:if="${successMessage}" class="alert alert-success" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <a th:href="@{/admin/thucdon/them}" class="button-add">Thêm món mới</a>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th class="stt-col">Stt</th>
+                <th>Tên món <span class="sort-arrow">◆</span></th>
+                <th class="number-col">Giá tiền <span class="sort-arrow">◆</span></th>
+                <th>Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="td, iterStat : ${dsThucDon}">
+                <td class="stt-col" th:text="${iterStat.count}">1</td>
+                <td th:text="${td.tenMon}">Cà phê đen</td>
+                <td class="number-col" th:text="${#numbers.formatDecimal(td.giaTienHienTai, 0, 'COMMA', 0, 'POINT')}">6.000</td>
+                <td class="actions">
+                    <a th:href="@{/admin/thucdon/edit/{id}(id=${td.maThucDon})}" class="btn-edit">Sửa</a>
+                    <a th:href="@{/admin/thucdon/delete/{id}(id=${td.maThucDon})}" class="btn-delete"
+                       onclick="return confirm('Bạn chắc chắn muốn xóa món này?');">Xóa</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(dsThucDon)}">
+                <td colspan="4" style="text-align: center;">Chưa có món nào trong thực đơn.</td>
+            </tr>
+            </tbody>
+        </table>
+    </main>
+</div>
+</body>
+</html>

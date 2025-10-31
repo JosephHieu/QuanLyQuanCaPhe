@@ -13,4 +13,6 @@ public interface ChiTietHoaDonRepository extends JpaRepository<ChiTietHoaDon,Str
     List<ChiTietHoaDon> findByHoaDonMaHoaDon(String maHoaDon);
 
     void deleteAllByHoaDonIn(List<HoaDon> hoaDons);
+
+    boolean existsByThucDonMaThucDon(String maThucDon);
 }

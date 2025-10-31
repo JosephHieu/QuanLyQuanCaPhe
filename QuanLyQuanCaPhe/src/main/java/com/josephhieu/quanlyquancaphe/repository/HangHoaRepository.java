@@ -13,4 +13,6 @@ public interface HangHoaRepository extends JpaRepository<HangHoa, String> {
     Optional<HangHoa> findByTenHangHoaIgnoreCase(String tenHangHoa);
 
     List<HangHoa> findByTenHangHoaContainingIgnoreCase(String keyword);
+
+    List<HangHoa> findAllByOrderByTenHangHoaAsc();
 }

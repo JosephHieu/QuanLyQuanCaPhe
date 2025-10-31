@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tìm kiếm Thực đơn</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <link rel="stylesheet" th:href="@{/css/menu.css}" />
+</head>
+<body>
+<div th:insert="~{fragments/header :: header}"></div>
+<div class="page-container">
+    <div class="sidebar-wrapper">
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
+    </div>
+    <main class="main-content">
+        <div class="breadcrumb">Tìm kiếm danh mục</div>
+
+        <form th:action="@{/admin/thucdon/timkiem}" method="get" class="search-form">
+            <input type="text" id="keyword" name="keyword" th:value="${keyword}" placeholder="Nhập tên món cần tìm..." />
+            <button type="submit">Tìm kiếm</button>
+        </form>
+
+        <table>
+            <thead>
+            <tr>
+                <th class="stt-col">Stt</th>
+                <th>Tên món</th>
+                <th class="number-col">Giá tiền</th>
+                <th>Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="td, iterStat : ${dsKetQua}">
+                <td class="stt-col" th:text="${iterStat.count}"></td>
+                <td th:text="${td.tenMon}"></td>
+                <td class="number-col" th:text="${#numbers.formatDecimal(td.giaTienHienTai, 0, 'COMMA', 0, 'POINT')}"></td>
+                <td class="actions">
+                    <a th:href="@{/admin/thucdon/edit/{id}(id=${td.maThucDon})}" class="btn-edit">Sửa</a>
+                    <a th:href="@{/admin/thucdon/delete/{id}(id=${td.maThucDon})}" class="btn-delete"
+                       onclick="return confirm('Bạn chắc chắn muốn xóa món này?');">Xóa</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(dsKetQua) and (keyword != null and !keyword.trim().isEmpty())}">
+                <td colspan="4" style="text-align: center; font-style: italic;">Không tìm thấy món nào khớp.</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(dsKetQua) and (keyword == null or keyword.trim().isEmpty())}">
+                <td colspan="4" style="text-align: center; font-style: italic;">Chưa có món nào trong thực đơn. (Hoặc nhập từ khóa để tìm)</td>
+            </tr>
+            </tbody>
+        </table>
+    </main>
+</div>
+</body>
+</html>

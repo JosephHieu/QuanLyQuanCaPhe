@@ -36,7 +36,7 @@ public class HangHoaService {
 
     public List<HangHoa> getAllHangHoa() {
 
-        return hangHoaRepository.findAll();
+        return hangHoaRepository.findAllByOrderByTenHangHoaAsc();
     }
 
     /**

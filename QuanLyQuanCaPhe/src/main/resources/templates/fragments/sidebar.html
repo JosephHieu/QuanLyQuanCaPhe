@@ -142,9 +142,40 @@
                     </li>
                 </ul>
             </li>
-            <li>
+            <li class="has-submenu">
                 <a th:href="@{/admin/thucdon}"
-                   th:classappend="${currentPage == 'admin_thucdon' ? 'active' : ''}">Quản lý thực đơn</a>
+                   th:classappend="${currentPage != null && #strings.startsWith(currentPage, 'admin_thucdon') ? 'active' : ''}">
+                    Quản lý thực đơn
+                </a>
+                <ul class="submenu"
+                    th:if="${currentPage != null && #strings.startsWith(currentPage, 'admin_thucdon')}">
+                    <li>
+                        <a th:href="@{/admin/thucdon}"
+                           th:classappend="${currentPage == 'admin_thucdon_list' ? 'active-sub' : ''}">
+                            » Xem danh sách thực đơn
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/thucdon/them}" th:classappend="${currentPage == 'admin_thucdon_them' ? 'active-sub' : ''}">
+                            » Thêm danh mục
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/thucdon/timkiem}" th:classappend="${currentPage == 'admin_thucdon_chinhsua' ? 'active-sub' : ''}">
+                            » Chỉnh sửa danh mục
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/thucdon/timkiem}" th:classappend="${currentPage == 'admin_thucdon_xoa' ? 'active-sub' : ''}">
+                            » Xóa danh mục
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/thucdon/timkiem}" th:classappend="${currentPage == 'admin_thucdon_timkiem' ? 'active-sub' : ''}">
+                            » Tìm kiếm danh mục
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li>
                 <a th:href="@{/admin/reports}"

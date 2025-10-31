@@ -10,4 +10,6 @@ import java.util.List;
 public interface ThucDonRepository extends JpaRepository<ThucDon, String> {
 
     List<ThucDon> findAllByOrderByLoaiMonAscTenMonAsc();
+
+    List<ThucDon> findByTenMonContainingIgnoreCase(String keyword);
 }
