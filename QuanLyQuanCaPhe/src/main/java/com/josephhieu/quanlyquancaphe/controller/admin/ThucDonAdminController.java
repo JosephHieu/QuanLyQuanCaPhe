@@ -2,6 +2,8 @@ package com.josephhieu.quanlyquancaphe.controller.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.josephhieu.quanlyquancaphe.dto.ChiTietThucDonFormDTO;
+import com.josephhieu.quanlyquancaphe.dto.NguyenLieuDTO;
+import com.josephhieu.quanlyquancaphe.dto.NguyenLieuDropdownDTO;
 import com.josephhieu.quanlyquancaphe.dto.ThucDonFormDTO;
 import com.josephhieu.quanlyquancaphe.entity.ChiTietThucDon;
 import com.josephhieu.quanlyquancaphe.entity.ThucDon;
@@ -57,13 +59,19 @@ public class ThucDonAdminController {
      */
     @GetMapping("/thucdon/them")
     public String showThemThucDonForm(Model model) {
-        // Gửi 1 DTO rỗng ra form
         model.addAttribute("thucDonForm", new ThucDonFormDTO());
-        // Gửi danh sách nguyên liệu (hàng hóa) để làm dropdown
-        model.addAttribute("dsNguyenLieu", hangHoaService.getAllHangHoa());
+
+        // SỬA LẠI: Lấy DTO thay vì Entity
+        List<NguyenLieuDropdownDTO> dsNguyenLieu = hangHoaService.getNguyenLieuForDropdown();
+        try {
+            // Gửi DTO đã chuyển sang JSON
+            model.addAttribute("dsNguyenLieuJson", objectMapper.writeValueAsString(dsNguyenLieu));
+        } catch (Exception e) {
+            model.addAttribute("dsNguyenLieuJson", "[]"); // Gửi mảng rỗng nếu lỗi
+        }
 
         model.addAttribute("currentPage", "admin_thucdon_them");
-        return "admin/thucdon/form"; // templates/admin/thucdon/form.html
+        return "admin/thucdon/form";
     }
 
     /**
@@ -140,24 +148,53 @@ public class ThucDonAdminController {
     @GetMapping("/thucdon/edit/{id}")
     public String showEditThucDonForm(@PathVariable("id") String maThucDon, Model model) {
         try {
-            // 1. Gọi Service để lấy DTO hoàn chỉnh
             ThucDonFormDTO dto = thucDonService.getThucDonFormDTOById(maThucDon);
 
-            // 2. Gửi DTO ra form
+            // SỬA LẠI: Lấy DTO thay vì Entity
+            List<NguyenLieuDropdownDTO> dsNguyenLieu = hangHoaService.getNguyenLieuForDropdown();
+
             model.addAttribute("thucDonForm", dto);
-            model.addAttribute("dsNguyenLieu", hangHoaService.getAllHangHoa());
             model.addAttribute("currentPage", "admin_thucdon_chinhsua");
 
-            // 3. Gửi JSON của thành phần (vẫn cần cho JavaScript)
+            // Gửi cả 2 DTO list sang JSON
+            model.addAttribute("dsNguyenLieuJson", objectMapper.writeValueAsString(dsNguyenLieu));
             model.addAttribute("thanhPhanJson", objectMapper.writeValueAsString(dto.getThanhPhan()));
 
             return "admin/thucdon/form";
 
-        } catch (NotFoundException e) {
-            return "redirect:/admin/thucdon?error=notFound";
         } catch (Exception e) {
             e.printStackTrace();
-            return "redirect:/admin/thucdon?error=unknown";
+            return "redirect:/admin/thucdon?error=jsonError";
+        }
+    }
+
+    /**
+     * Xử lý lưu Chỉnh sửa
+     * URL: /admin/thucdon/update (POST)
+     */
+    @PostMapping("/thucdon/update")
+    public String updateThucDon(
+            @ModelAttribute("thucDonForm") ThucDonFormDTO thucDonForm, // Nhận DTO (đã chứa maThucDon)
+            RedirectAttributes redirectAttributes,
+            Model model
+    ) {
+        try {
+            if (thucDonForm.getMaThucDon() == null) {
+                throw new IllegalArgumentException("Thiếu Mã thực đơn khi cập nhật.");
+            }
+
+            thucDonService.updateThucDon(thucDonForm);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật món ăn thành công!");
+            return "redirect:/admin/thucdon";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("errorMessage", "Lỗi khi cập nhật món: " + e.getMessage());
+            // Gửi lại dữ liệu cũ để form hiển thị
+            model.addAttribute("thucDonForm", thucDonForm);
+            model.addAttribute("dsNguyenLieu", hangHoaService.getAllHangHoa());
+            model.addAttribute("currentPage", "admin_thucdon_chinhsua");
+            return "admin/thucdon/form";
         }
     }
 

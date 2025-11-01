@@ -2,10 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Thêm Danh mục món</title>
+    <title th:text="${thucDonForm.maThucDon == null ? 'Thêm Danh mục món' : 'Chỉnh sửa Danh mục món'}"></title>
     <link rel="stylesheet" th:href="@{/css/layout.css}" />
-    <link rel="stylesheet" th:href="@{/css/menu.css}" />
-
+    <link rel="stylesheet" th:href="@{/css/menu.css}" /> <style>
+    /* (CSS của bạn) */
+</style>
 </head>
 <body>
 <div th:insert="~{fragments/header :: header}"></div>
@@ -15,106 +16,143 @@
         <div th:insert="~{fragments/footer :: footer}"></div>
     </div>
     <main class="main-content">
-        <div class="breadcrumb">Thêm danh mục món</div>
+        <div class="breadcrumb" th:text="${thucDonForm.maThucDon == null ? 'Thêm danh mục món' : 'Chỉnh sửa danh mục món'}"></div>
 
-<form th:action="@{/admin/thucdon/save}" th:object="${thucDonForm}" method="post">
-    <div th:if="${errorMessage}" class="global-error-message">
-        <strong th:text="${errorMessage}"></strong>
-    </div>
+        <form th:action="${thucDonForm.maThucDon == null ? '/admin/thucdon/save' : '/admin/thucdon/update'}"
+              th:object="${thucDonForm}" method="post">
 
-    <div class="form-grid">
-        <label for="tenMon">Tên món:</label>
-        <input type="text" id="tenMon" th:field="*{tenMon}" required />
+            <input type="hidden" th:if="${thucDonForm.maThucDon != null}" th:field="*{maThucDon}" />
 
-        <label for="giaTien">Giá tiền:</label>
-        <input type="number" id="giaTien" th:field="*{giaTien}" min="0" step="1000" required />
+            <div th:if="${errorMessage != null or saveError != null or fileError != null}" class="global-error-message">
+                <strong th:text="${errorMessage != null ? errorMessage : (saveError != null ? saveError : fileError)}"></strong>
+            </div>
 
-        <label for="loaiMon">Loại món:</label>
-        <input type="text" id="loaiMon" th:field="*{loaiMon}" required placeholder="Ví dụ: Cafe, Trà, Nước ép..." />
-    </div>
+            <div class="form-grid">
+                <label for="tenMon">Tên món:</label>
+                <input type="text" id="tenMon" th:field="*{tenMon}" required />
 
-    <div class="ingredients-section">
-        <h4>Thành phần:</h4>
-        <table class="ingredients-table">
-            <thead>
+                <label for="giaTien">Giá tiền:</label>
+                <input type="number" id="giaTien" th:field="*{giaTien}" min="0" step="1000" required />
+
+                <label for="loaiMon">Loại món:</label>
+                <input type="text" id="loaiMon" th:field="*{loaiMon}" required placeholder="Ví dụ: Cafe, Trà..." />
+            </div>
+
+            <div class="ingredients-section">
+                <h4>Thành phần:</h4>
+                <table class="ingredients-table">
+                    <thead>
+                    <tr>
+                        <th>Tên thành phần (Nguyên liệu)</th>
+                        <th>Khối lượng</th>
+                        <th>Đơn vị tính</th>
+                        <th class="action-col">Xóa</th>
+                    </tr>
+                    </thead>
+                    <tbody id="ingredient-tbody">
+                    </tbody>
+                </table>
+                <button type="button" class="add-row-btn" onclick="addIngredientRow()">+ Thêm thành phần</button>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" th:text="${thucDonForm.maThucDon == null ? 'Thêm món' : 'Lưu'}"></button>
+                <a th:href="@{/admin/thucdon}">Hủy</a>
+            </div>
+        </form>
+
+        <table style="display: none;">
+            <tbody id="ingredient-row-template">
             <tr>
-                <th>Tên thành phần (Nguyên liệu)</th>
-                <th>Khối lượng</th>
-                <th>Đơn vị tính</th>
-                <th class="action-col">Xóa</th>
+                <td>
+                    <select name="thanhPhan[__index__].maHangHoa" class="ingredient-select" onchange="updateUnit(this)" required>
+                        <option value="">-- Chọn nguyên liệu --</option>
+                        <option th:each="nl : ${dsNguyenLieu}"
+                                th:value="${nl.maHangHoa}"
+                                th:text="${nl.tenHangHoa}"
+                                th:data-unit="${nl.donViTinh?.tenDonVi}">
+                        </option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="thanhPhan[__index__].khoiLuong" min="0" step="any" required />
+                </td>
+                <td>
+                    <span class="unit-display">(chọn nguyên liệu)</span>
+                </td>
+                <td class="action-col">
+                    <span class="delete-row-btn" onclick="removeIngredientRow(this)">X</span>
+                </td>
             </tr>
-            </thead>
-            <tbody id="ingredient-tbody">
             </tbody>
         </table>
-        <button type="button" class="add-row-btn" onclick="addIngredientRow()">+ Thêm thành phần</button>
-    </div>
 
-    <div class="form-actions">
-        <button type="submit">Thêm món</button>
-        <a th:href="@{/admin/thucdon}">Hủy</a>
-    </div>
-</form>
-
-<table style="display: none;">
-    <tbody id="ingredient-row-template">
-    <tr>
-        <td>
-            <select name="thanhPhan[__index__].maHangHoa" class="ingredient-select" onchange="updateUnit(this)" required>
-                <option value="">-- Chọn nguyên liệu --</option>
-                <option th:each="nl : ${dsNguyenLieu}"
-                        th:value="${nl.maHangHoa}"
-                        th:text="${nl.tenHangHoa}"
-                        th:data-unit="${nl.donViTinh?.tenDonVi}">
-                </option>
-            </select>
-        </td>
-        <td>
-            <input type="number" name="thanhPhan[__index__].khoiLuong" min="0" step="any" required />
-        </td>
-        <td>
-            <span class="unit-display">(chọn nguyên liệu)</span>
-        </td>
-        <td class="action-col">
-            <span class="delete-row-btn" onclick="removeIngredientRow(this)">X</span>
-        </td>
-    </tr>
-    </tbody>
-</table>
-
-</main>
+    </main>
 </div>
 
-<script>
-    let ingredientIndex = 0; // Biến đếm index cho mảng thanhPhan
+<script th:inline="javascript">
+    // Lấy danh sách nguyên liệu (từ JSON)
+    const dsNguyenLieu_JsonData = /*[[${dsNguyenLieuJson}]]*/ '[]';
+    const dsNguyenLieu = JSON.parse(dsNguyenLieu_JsonData); // Parse JSON
 
-    function addIngredientRow() {
-        const tableBody = document.getElementById('ingredient-tbody');
-        // Lấy template HTML
-        const template = document.getElementById('ingredient-row-template').innerHTML;
-        // Thay thế placeholder __index__ bằng giá trị index hiện tại
-        const newRowHtml = template.replace(/__index__/g, ingredientIndex);
+    // Lấy danh sách thành phần cũ (Giữ nguyên)
+    const thanhPhanCu_JsonData = /*[[${thanhPhanJson}]]*/ null;
 
-        // Thêm dòng mới vào bảng
-        const newRow = tableBody.insertRow();
-        newRow.innerHTML = newRowHtml;
+    let ingredientIndex = 0;
 
-        ingredientIndex++; // Tăng index cho lần thêm tiếp theo
+    // Hàm tạo HTML cho <select> nguyên liệu
+    function createIngredientSelectHtml(selectedIndex) {
+        let optionsHtml = '<option value="">-- Chọn nguyên liệu --</option>';
+        dsNguyenLieu.forEach(nl => {
+            let selected = (nl.maHangHoa === selectedIndex) ? 'selected' : '';
+            // SỬA LẠI: Dùng `nl.donViTinh` (từ DTO) thay vì `nl.donViTinh?.tenDonVi` (từ Entity)
+            optionsHtml += `<option value="${nl.maHangHoa}" data-unit="${nl.donViTinh || ''}" ${selected}>${nl.tenHangHoa}</option>`;
+        });
+        return `<select name="thanhPhan[${ingredientIndex}].maHangHoa" class="ingredient-select" onchange="updateUnit(this)" required>${optionsHtml}</select>`;
     }
 
+    // Hàm thêm 1 dòng (có thể điền sẵn dữ liệu)
+    function addIngredientRow(item = null) { // item: { maHangHoa: '...', khoiLuong: ... }
+        const tableBody = document.getElementById('ingredient-tbody');
+        const newRow = tableBody.insertRow();
+
+        const selectedMaHangHoa = item ? item.maHangHoa : null;
+        const khoiLuong = item ? item.khoiLuong : '';
+        let unit = '(chọn nguyên liệu)';
+
+        if(item) {
+            const nguyenLieu = dsNguyenLieu.find(nl => nl.maHangHoa === item.maHangHoa);
+            if(nguyenLieu) unit = nguyenLieu.donViTinh?.tenDonVi || '';
+        }
+
+        newRow.innerHTML = `
+            <td>
+                ${createIngredientSelectHtml(selectedMaHangHoa)}
+            </td>
+            <td>
+                <input type="number" name="thanhPhan[${ingredientIndex}].khoiLuong" min="0" step="any" required value="${khoiLuong}" />
+            </td>
+            <td>
+                <span class="unit-display">${unit}</span>
+            </td>
+            <td class="action-col">
+                <span class="delete-row-btn" onclick="removeIngredientRow(this)">X</span>
+            </td>
+        `;
+
+        ingredientIndex++;
+    }
+
+    // Hàm xóa dòng
     function removeIngredientRow(button) {
-        // Lấy thẻ <tr> cha và xóa nó
         const row = button.closest('tr');
         row.remove();
-        // (Lưu ý: Việc này không cập nhật lại index của các dòng còn lại,
-        // nhưng Spring Boot vẫn xử lý được)
     }
 
+    // Hàm cập nhật đơn vị
     function updateUnit(selectElement) {
-        // Lấy đơn vị tính từ data-unit
         const selectedOption = selectElement.options[selectElement.selectedIndex];
         const unit = selectedOption.getAttribute('data-unit');
-        // Tìm span hiển thị đơn vị trong cùng hàng <tr>
         const row = selectElement.closest('tr');
         const unitDisplay = row.querySelector('.unit-display');
         if (unit) {
@@ -124,9 +162,26 @@
         }
     }
 
-    // Tự động thêm 1 dòng trống khi tải trang
+    // Tải trang: Điền dữ liệu cũ (Sửa) hoặc thêm 1 dòng trống (Thêm)
     document.addEventListener('DOMContentLoaded', function() {
-        addIngredientRow();
+        if (thanhPhanCu_JsonData) {
+            try {
+                const thanhPhanList = JSON.parse(thanhPhanCu_JsonData);
+                if (thanhPhanList && thanhPhanList.length > 0) {
+                    thanhPhanList.forEach(item => {
+                        addIngredientRow(item);
+                    });
+                } else {
+                    addIngredientRow(); // Thêm 1 dòng trống nếu món cũ không có thành phần
+                }
+            } catch (e) {
+                console.error("Lỗi parse JSON thành phần cũ:", e);
+                addIngredientRow();
+            }
+        } else {
+            // Chế độ Thêm mới
+            addIngredientRow();
+        }
     });
 </script>
 </body>

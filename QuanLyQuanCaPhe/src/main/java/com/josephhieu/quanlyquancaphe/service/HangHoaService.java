@@ -1,5 +1,6 @@
 package com.josephhieu.quanlyquancaphe.service;
 
+import com.josephhieu.quanlyquancaphe.dto.NguyenLieuDropdownDTO;
 import com.josephhieu.quanlyquancaphe.entity.*;
 import com.josephhieu.quanlyquancaphe.entity.id.DonNhapId;
 import com.josephhieu.quanlyquancaphe.exception.InsufficientStockException;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class HangHoaService {
@@ -222,5 +224,21 @@ public class HangHoaService {
             System.err.println("Lỗi xóa hàng hóa do ràng buộc: " + e.getMessage());
             throw new DataIntegrityViolationException("Không thể xóa hàng hóa này vì đang được sử dụng (ví dụ: đã nhập/xuất kho hoặc có trong thực đơn).");
         }
+    }
+
+    /**
+     * PHƯƠNG THỨC MỚI: Lấy danh sách nguyên liệu (dưới dạng DTO) cho dropdown
+     */
+    @Transactional(readOnly = true) // Đảm bảo session mở khi truy cập donViTinh
+    public List<NguyenLieuDropdownDTO> getNguyenLieuForDropdown() {
+        // Gọi query JOIN FETCH
+        return hangHoaRepository.findAllWithDonViTinh().stream()
+                .map(hh -> new NguyenLieuDropdownDTO(
+                        hh.getMaHangHoa(),
+                        hh.getTenHangHoa(),
+                        // Lấy Tên đơn vị (an toàn nếu donViTinh là null)
+                        (hh.getDonViTinh() != null) ? hh.getDonViTinh().getTenDonVi() : ""
+                ))
+                .collect(Collectors.toList());
     }
 }
