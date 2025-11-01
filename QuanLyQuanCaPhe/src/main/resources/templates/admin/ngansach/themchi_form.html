@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm Chi tiêu</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <link rel="stylesheet" th:href="@{/css/budget.css}" />
+    <style>
+
+    </style>
+</head>
+<body>
+<div th:insert="~{fragments/header :: header}"></div>
+<div class="page-container">
+    <div class="sidebar-wrapper">
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
+    </div>
+
+    <main class="main-content">
+        <div class="breadcrumb">Thêm chi tiêu</div>
+
+<form th:action="@{/admin/ngansach/themchi/save}" th:object="${chiTieuListDTO}" method="post">
+    <div th:if="${errorMessage}" class="global-error-message">
+        <strong th:text="${errorMessage}"></strong>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Ngày <span class="sort-arrow">◆</span></th>
+            <th>Khoản chi <span class="sort-arrow">◆</span></th>
+            <th>Số tiền <span class="sort-arrow">◆</span></th>
+            <th class="action-col">Xóa</th>
+        </tr>
+        </thead>
+        <tbody id="chitieu-tbody">
+        <tr th:each="item, iterStat : *{danhSachChiTieu}">
+            <input type="hidden" th:field="*{danhSachChiTieu[__${iterStat.index}__].maChiTieu}" />
+            <td>
+                <input type="date" th:field="*{danhSachChiTieu[__${iterStat.index}__].ngayChi}" required />
+            </td>
+            <td>
+                <input type="text" th:field="*{danhSachChiTieu[__${iterStat.index}__].tenKhoanChi}" required />
+            </td>
+            <td>
+                <input type="number" th:field="*{danhSachChiTieu[__${iterStat.index}__].soTien}" min="0" step="1000" required />
+            </td>
+            <td class="action-col">
+                <span class="delete-row-btn" onclick="removeRow(this)">X</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <button type="button" class="add-row-btn" onclick="addRow()">+ Thêm dòng</button>
+
+    <div class="form-actions">
+        <button type="submit">Lưu</button>
+        <a th:href="@{/admin/ngansach}">Hủy</a>
+    </div>
+</form>
+
+<table style="display: none;">
+    <tbody id="row-template">
+    <tr>
+        <input type="hidden" name="danhSachChiTieu[__index__].maChiTieu" value="" />
+        <td>
+            <input type="date" name="danhSachChiTieu[__index__].ngayChi" required />
+        </td>
+        <td>
+            <input type="text" name="danhSachChiTieu[__index__].tenKhoanChi" required />
+        </td>
+        <td>
+            <input type="number" name="danhSachChiTieu[__index__].soTien" min="0" step="1000" required />
+        </td>
+        <td class="action-col">
+            <span class="delete-row-btn" onclick="removeRow(this)">X</span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</main>
+</div>
+
+<script>
+    // Lấy index bắt đầu từ số lượng dòng đã có (do Thymeleaf render ra)
+    let rowIndex = /*[[${chiTieuListDTO.danhSachChiTieu.size()}]]*/ 0;
+
+    function addRow() {
+        const tableBody = document.getElementById('chitieu-tbody');
+        const template = document.getElementById('row-template').innerHTML;
+        const newRowHtml = template.replace(/__index__/g, rowIndex);
+
+        const newRow = tableBody.insertRow(); // Thêm vào cuối
+        newRow.innerHTML = newRowHtml;
+
+        // Tự động điền ngày hôm nay cho dòng mới
+        const dateInput = newRow.querySelector('input[type="date"]');
+        if (dateInput) {
+            dateInput.valueAsDate = new Date();
+        }
+
+        rowIndex++;
+    }
+
+    function removeRow(button) {
+        const row = button.closest('tr');
+        row.remove();
+        // Lưu ý: Việc này không cập nhật lại index của các dòng còn lại,
+        // nhưng Spring Boot vẫn xử lý được.
+        // Nếu muốn xóa khỏi CSDL, cần logic phức tạp hơn (AJAX)
+    }
+
+    // Tự động thêm 1 dòng trống khi tải trang
+    document.addEventListener('DOMContentLoaded', function() {
+        addRow();
+    });
+</script>
+</body>
+</html>

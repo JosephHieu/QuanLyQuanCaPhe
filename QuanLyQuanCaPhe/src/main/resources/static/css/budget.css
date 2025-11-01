@@ -1,0 +1,32 @@
+.filter-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.filter-form label { font-weight: bold; }
+.filter-form input[type="date"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+.filter-form button { padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+
+.main-content table { width: 100%; border-collapse: collapse; margin-top: 10px; background-color: #fff; }
+.main-content th, .main-content td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; }
+.main-content th { background-color: #f8f9fa; font-weight: bold; }
+.main-content td.number-col { text-align: right; }
+.main-content tfoot td { font-weight: bold; background-color: #f8f9fa; }
+
+.main-content form { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 800px; margin: 20px auto; }
+.main-content table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.main-content th, .main-content td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+.main-content th { background-color: #f8f9fa; font-weight: bold; }
+.main-content td input { width: 95%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;}
+.main-content td.action-col { width: 50px; text-align: center; }
+.main-content .delete-row-btn { color: red; cursor: pointer; font-weight: bold; }
+.form-actions { text-align: center; margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;}
+.form-actions button, .form-actions a { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; text-decoration: none; display: inline-block; margin: 0 10px;}
+.form-actions button { background-color: #f0f0f0; border: 1px solid #aaa; color: #333;}
+.form-actions a { background-color: #ccc; border: 1px solid #bbb; color: #333; line-height: normal; }
+.global-error-message { color: red; background-color: #ffe0e0; border: 1px solid red; padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center;}

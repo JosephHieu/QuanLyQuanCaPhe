@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Xem Thu Chi</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <link rel="stylesheet" th:href="@{/css/budget.css}" />
+
+</head>
+<body>
+<div th:insert="~{fragments/header :: header}"></div>
+<div class="page-container">
+    <div class="sidebar-wrapper">
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
+    </div>
+    <main class="main-content">
+        <div class="breadcrumb">Xem thu chi</div>
+
+<form th:action="@{/admin/ngansach}" method="get" class="filter-form">
+    <label for="startDate">Từ ngày:</label>
+    <input type="date" id="startDate" name="startDate" th:value="${startDate}" />
+    <span class="calendar-icon">🗓️</span>
+
+    <label for="endDate" style="margin-left: 15px;">đến ngày:</label>
+    <input type="date" id="endDate" name="endDate" th:value="${endDate}" />
+    <span class="calendar-icon">🗓️</span>
+
+    <button type="submit" style="margin-left: 15px;">Xem</button>
+</form>
+
+<table>
+    <thead>
+    <tr>
+        <th>Ngày</th>
+        <th class="number-col">Thu <span class="sort-arrow">◆</span></th>
+        <th class="number-col">Chi <span class="sort-arrow">◆</span></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="ngay : ${dto.chiTietTheoNgay}">
+        <td th:text="${#temporals.format(ngay.ngay, 'dd/MM/yyyy')}"></td>
+        <td class="number-col" th:text="${#numbers.formatDecimal(ngay.tongThu, 0, 'COMMA', 0, 'POINT')}"></td>
+        <td class="number-col" th:text="${#numbers.formatDecimal(ngay.tongChi, 0, 'COMMA', 0, 'POINT')}"></td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(dto.chiTietTheoNgay)}">
+        <td colspan="3" style="text-align: center; font-style: italic;">Không có dữ liệu thu chi trong khoảng thời gian này.</td>
+    </tr>
+    </tbody>
+    <tfoot>
+    <tr>
+        <td><strong>Tổng</strong></td>
+        <td class="number-col"><strong th:text="${#numbers.formatDecimal(dto.tongThuCong, 0, 'COMMA', 0, 'POINT')}"></strong></td>
+        <td class="number-col"><strong th:text="${#numbers.formatDecimal(dto.tongChiCong, 0, 'COMMA', 0, 'POINT')}"></strong></td>
+    </tr>
+    </tfoot>
+</table>
+</main>
+</div>
+</body>
+</html>

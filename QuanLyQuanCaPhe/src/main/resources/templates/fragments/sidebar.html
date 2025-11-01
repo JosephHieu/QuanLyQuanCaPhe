@@ -208,6 +208,26 @@
                     </li>
                 </ul>
             </li>
+            <li class="has-submenu">
+            <a th:href="@{/admin/ngansach}"
+               th:classappend="${currentPage != null && #strings.startsWith(currentPage, 'admin_ngansach') ? 'active' : ''}">
+                Quản lý ngân sách
+            </a>
+            <ul class="submenu"
+                th:if="${currentPage != null && #strings.startsWith(currentPage, 'admin_ngansach')}">
+                <li>
+                    <a th:href="@{/admin/ngansach}"
+                       th:classappend="${currentPage == 'admin_ngansach_list' ? 'active-sub' : ''}">
+                        » Xem thu chi
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/ngansach/themchi}" th:classappend="${currentPage == 'admin_ngansach_themchi' ? 'active-sub' : ''}">
+                        » Thêm chi tiêu
+                    </a>
+                </li>
+            </ul>
+            </li>
 
 
             <li>
