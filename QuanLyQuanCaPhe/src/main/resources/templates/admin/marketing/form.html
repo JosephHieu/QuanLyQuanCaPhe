@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${khuyenMai.maKhuyenMai == null ? 'Thêm Khuyến mãi' : 'Sửa Khuyến mãi'}"></title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <link rel="stylesheet" th:href="@{/css/marketing.css}" />
+
+
+</head>
+<body>
+<div th:insert="~{fragments/header :: header}"></div>
+<div class="page-container">
+    <div class="sidebar-wrapper">
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
+    </div>
+
+    <main class="main-content">
+        <div class="breadcrumb" th:text="${khuyenMai.maKhuyenMai == null ? 'Thêm khuyến mãi' : 'Sửa khuyến mãi'}"></div>
+
+        <form th:action="${khuyenMai.maKhuyenMai == null ? '/admin/marketing/save' : '/admin/marketing/update'}"
+              th:object="${khuyenMai}" method="post">
+
+            <input type="hidden" th:if="${khuyenMai.maKhuyenMai != null}" th:field="*{maKhuyenMai}" />
+
+            <div th:if="${errorMessage}" class="global-error-message">
+                <strong th:text="${errorMessage}"></strong>
+            </div>
+
+            <div class="form-grid">
+                <label for="tenKhuyenMai">Tên khuyến mãi:</label>
+                <input type="text" id="tenKhuyenMai" th:field="*{tenKhuyenMai}" required />
+
+                <label for="ngayBatDau">Ngày bắt đầu:</label>
+                <div class="input-group">
+                    <input type="date" id="ngayBatDau" th:field="*{ngayBatDau}" required />
+                    <span class="calendar-icon">🗓️</span>
+                </div>
+
+                <label for="ngayKetThuc">Ngày kết thúc:</label>
+                <div class="input-group">
+                    <input type="date" id="ngayKetThuc" th:field="*{ngayKetThuc}" required />
+                    <span class="calendar-icon">🗓️</span>
+                </div>
+
+                <label for="giaTriGiam">% giảm giá:</label>
+                <input type="number" id="giaTriGiam" th:field="*{giaTriGiam}" min="0" max="100" step="1" required placeholder="Ví dụ: 25" />
+
+                <input type="hidden" th:field="*{loaiKhuyenMai}" />
+                <input type="hidden" th:field="*{trangThai}" />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" th:text="${khuyenMai.maKhuyenMai == null ? 'Thêm' : 'Lưu'}"></button>
+                <a th:href="@{/admin/marketing}">Hủy</a>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>

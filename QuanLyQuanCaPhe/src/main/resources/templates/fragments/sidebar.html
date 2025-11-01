@@ -69,8 +69,8 @@
                     </li>
                 </ul>
             </li>
-
-            <li class="has-submenu"> <a th:href="@{/admin/thietbi}"
+            <li class="has-submenu">
+                <a th:href="@{/admin/thietbi}"
                                         th:classappend="${currentPage != null && #strings.startsWith(currentPage, 'admin_thietbi') ? 'active' : ''}">
                 Quản lý trang thiết bị
             </a>
@@ -177,6 +177,39 @@
                     </li>
                 </ul>
             </li>
+            <li class="has-submenu">
+                <a th:href="@{/admin/marketing}"
+                   th:classappend="${currentPage != null && #strings.startsWith(currentPage, 'admin_marketing') ? 'active' : ''}">
+                    Quản lý Marketing
+                </a>
+                <ul class="submenu"
+                    th:if="${currentPage != null && #strings.startsWith(currentPage, 'admin_marketing')}">
+                    <li>
+                        <a th:href="@{/admin/marketing}" th:classappend="${currentPage == 'admin_marketing_list' ? 'active-sub' : ''}">
+                            » Xem các khuyến mãi
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/marketing/them}" th:classappend="${currentPage == 'admin_marketing_them' ? 'active-sub' : ''}">
+                            » Thêm khuyến mãi
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/marketing}"
+                           th:classappend="${currentPage == 'admin_marketing_sua' ? 'active-sub' : ''}">
+                            » Sửa khuyến mãi
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/marketing}"
+                           th:classappend="${currentPage == 'admin_marketing_xoa' ? 'active-sub' : ''}">
+                            » Xoá khuyến mãi
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+
             <li>
                 <a th:href="@{/admin/reports}"
                    th:classappend="${currentPage == 'admin_reports' ? 'active' : ''}">Thống kê, báo cáo</a>
