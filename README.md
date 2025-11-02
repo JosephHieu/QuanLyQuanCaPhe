@@ -1,12 +1,13 @@
 # Phần mềm Quản lý Quán Cà Phê (Cafe Management System)
 
-## Giới thiệu
+## `Giới thiệu`
+## `Link Demo:` https://drive.google.com/file/d/1YczOXhhaDIZhhtZ748y9zsBXf1OC3fxv/view?usp=sharing
 ### Đây là một dự án web full-stack mô phỏng Hệ thống Quản lý Quán Cà Phê (POS) hoàn chỉnh, được xây dựng từ đầu bằng Spring Boot và Thymeleaf.
 ### Ứng dụng bao gồm các chức năng nghiệp vụ phức tạp từ quản lý nhân viên, kiểm soát kho hàng, quản lý thực đơn (bao gồm định lượng nguyên liệu), đến một giao diện bán hàng trực quan (xem, chuyển, gộp, tách bàn) và hệ thống báo cáo tài chính.
 
-## 🚀 Tính năng nổi bật
+## `🚀 Tính năng nổi bật`
 ### Dự án này thể hiện khả năng xử lý các nghiệp vụ phức tạp và bảo mật ở cả backend và frontend:
-## 1. Hệ thống Xác thực & Phân quyền (Spring Security)
+## `1. Hệ thống Xác thực & Phân quyền (Spring Security)`
 ### Đăng nhập: Sử dụng Spring Security, mật khẩu được mã hóa bằng BCrypt.
 ### Phân quyền (Role-Based): Giao diện và chức năng được hiển thị động tùy theo vai trò (ROLE_ADMIN hoặc ROLE_STAFF).
 ### Admin: Thấy tất cả các mô-đun quản lý (Nhân viên, Kho, Báo cáo...).
@@ -14,7 +15,7 @@
 ### Bảo vệ Endpoint: Các API backend được bảo vệ (ví dụ: /admin/** chỉ Admin mới được truy cập).
 ### Bảo vệ CSRF: Kích hoạt cho tất cả các yêu cầu POST, đảm bảo an toàn.
 
-## 2. Giao diện Bán hàng (POS)
+## `2. Giao diện Bán hàng (POS)`
 ### Đây là mô-đun phức tạp nhất, xử lý logic nghiệp vụ theo thời gian thực:
 ### Hiển thị bàn: Hiển thị lưới các bàn với màu sắc động theo trạng thái (Trống, Có khách, Đặt trước).
 ### Xem thông tin bàn: Popup hiển thị các món đã gọi và thông tin đặt trước.
@@ -25,25 +26,25 @@
 ### Tách bàn: Chuyển một số món (với số lượng tùy chọn) từ bàn A sang bàn B.
 ### Thanh toán: Xử lý thanh toán, tính tiền thối, và tự động cập nhật trạng thái hóa đơn (HoaDon.TrangThai) và trạng thái bàn (Ban.TinhTrang).
 
-## 3. Các Mô-đun Quản lý (CRUD)
+## `3. Các Mô-đun Quản lý (CRUD)`
 ### Quản lý Nhân viên: CRUD, tích hợp tạo TaiKhoan và phân quyền.
 ### Quản lý Thực đơn: CRUD, bao gồm logic phức tạp để quản lý thành phần nguyên liệu (ChiTietThucDon).
 ### Quản lý Kho hàng (HangHoa): Tích hợp logic Nhập/Xuất kho, tự động cập nhật số lượng tồn (soLuong).
 ### Quản lý Thiết bị & Khuyến mãi: CRUD tiêu chuẩn.
 
-## 4. Báo các & Thống kê
+## `4. Báo các & Thống kê`
 ### Lọc động: Lọc báo cáo theo khoảng ngày và loại báo cáo (Thu/Chi, Lương).
 ### Tổng hợp dữ liệu: Tự động tổng hợp dữ liệu từ nhiều bảng (HoaDon, ChiTieu, NhanVien, ChucVu) bằng Java Streams ở tầng Service.
 ### Xuất file (Demo): Xây dựng API backend (/admin/reports/export) có khả năng tạo và trả về file Excel (.xls) (sử dụng thư viện Apache POI).
 
-## 💻 Công nghệ sử dụng
+## `💻 Công nghệ sử dụng`
 ### Backend,"Spring Boot, Spring Security (Auth, BCrypt, CSRF), Spring Data JPA (Hibernate)"
 ### Frontend,"Thymeleaf (Server-Side Rendering), JavaScript (Fetch API, DOM)"
 ### Database,MySQL
 ### Build/Dependency,Maven
 ### Libraries,"Lombok, Apache POI (Xuất Excel)"
 
-## 🔧 Cài đặt & Chạy dự án (Local Setup)
+## `🔧 Cài đặt & Chạy dự án (Local Setup)`
 ### Yêu cầu: Java (JDK 17+), Maven 3.x+, MySQL 8.x+
 
 ## `Clone Repository`
