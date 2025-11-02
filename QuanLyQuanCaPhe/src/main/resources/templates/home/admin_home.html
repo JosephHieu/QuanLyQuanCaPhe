@@ -15,20 +15,20 @@
 <div class="page-container">
 
     <div class="sidebar-wrapper">
+
         <div th:insert="~{fragments/sidebar :: sidebar}"></div>
 
-        <div class="sidebar-footer">
-            <button>Giới thiệu</button>
-        </div>
-    </div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
 
+    </div>
     <main class="main-content">
         <div class="breadcrumb">Trang chủ</div>
-
         <h1>XIN CHÀO, <span th:text="${username}">admin</span> !</h1>
     </main>
 
 </div>
+
+<div th:insert="~{fragments/footer :: common_modals}"></div>
 
 </body>
 </html>

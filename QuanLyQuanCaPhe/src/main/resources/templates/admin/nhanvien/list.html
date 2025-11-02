@@ -5,38 +5,9 @@
     <title>Quản lý Nhân viên</title>
 
     <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <link rel="stylesheet" th:href="@{/css/employee.css}" />
 
-    <style>
-        .main-content table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .main-content th, .main-content td {
-            border: 1px solid #ddd;
-            padding: 12px 15px;
-            text-align: left;
-            vertical-align: middle;
-        }
-        .main-content th {
-            background-color: #f4f4f4;
-            font-weight: bold;
-            color: #333;
-        }
-        /* Dòng chẵn */
-        .main-content tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .main-content tr:hover {
-            background-color: #f1f1f1;
-        }
-        /* Căn phải cột Lương */
-        .main-content td.col-luong {
-            text-align: right;
-        }
-    </style>
+
 </head>
 <body>
 
@@ -48,9 +19,8 @@
 
     <div class="sidebar-wrapper">
         <div th:insert="~{fragments/sidebar :: sidebar}"></div>
-        <div class="sidebar-footer">
-            <button>Giới thiệu</button>
-        </div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
+
     </div>
 
     <main class="main-content">
@@ -85,5 +55,7 @@
 
     </main>
 </div>
+<div th:insert="~{fragments/footer :: common_modals}"></div>
+
 </body>
 </html>

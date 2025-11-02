@@ -8,7 +8,13 @@
 <body>
 <div class="page-container">
 
-    <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+    <div class="sidebar-wrapper">
+
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+
+        <div th:insert="~{fragments/footer :: footer}"></div>
+
+    </div>
 
     <main class="main-content">
         <h1>XIN CHÀO, <span th:text="${username}">user_one</span> !</h1>
@@ -16,6 +22,6 @@
 
 </div>
 
-<div th:insert="~{fragments/footer :: footer}"></div>
+<div th:insert="~{fragments/footer :: common_modals}"></div>
 </body>
 </html>

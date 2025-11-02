@@ -15,6 +15,7 @@
     <div class="sidebar-wrapper">
         <div th:insert="~{fragments/sidebar :: sidebar}"></div>
         <div th:insert="~{fragments/footer :: footer}"></div>
+
     </div>
 
     <main class="main-content">
@@ -117,5 +118,7 @@
         addRow();
     });
 </script>
+<div th:insert="~{fragments/footer :: common_modals}"></div>
+
 </body>
 </html>

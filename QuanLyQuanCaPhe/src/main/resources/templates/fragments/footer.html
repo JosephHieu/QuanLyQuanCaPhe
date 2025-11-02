@@ -1,8 +1,88 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<footer th:fragment="footer" class="footer-bar">
-    <button>Giới thiệu</button>
-</footer>
+
+<div th:fragment="footer" class="sidebar-footer">
+    <button id="aboutButton" type="button" onclick="openAboutModal()">Giới thiệu</button>
+</div>
+
+
+<div th:fragment="common_modals">
+
+    <div id="aboutModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-button" onclick="closeModal('aboutModal')">&times;</span>
+            <h4>Giới thiệu phần mềm</h4>
+
+            <div style="padding: 10px 0; text-align: left;">
+                <p><strong>Phần mềm Quản lý quán cà phê ver 1.0</strong></p>
+                <p>Đây là sản phẩm được xây dựng để demo các chức năng của một ứng dụng web quản lý.</p>
+                <p><strong>Công nghệ sử dụng:</strong></p>
+                <ul>
+                    <li><strong>Backend:</strong> Spring Boot, Spring Security, Spring Data JPA</li>
+                    <li><strong>Frontend:</strong> Thymeleaf, JavaScript</li>
+                    <li><strong>Database:</strong> MySQL</li>
+                </ul>
+                <p>Cảm ơn đã sử dụng!</p>
+            </div>
+
+            <div class="modal-actions" style="text-align: right;">
+                <button type="button" onclick="closeModal('aboutModal')">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal {
+            display: none; position: fixed; z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.4); padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe; margin: 5% auto; padding: 20px;
+            border: 1px solid #888; width: 60%; border-radius: 5px;
+            position: relative; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        }
+        .close-button {
+            color: #aaa; position: absolute; top: 10px; right: 20px;
+            font-size: 28px; font-weight: bold; cursor: pointer;
+        }
+        .close-button:hover { color: black; }
+        .modal h4 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .modal .modal-actions { text-align: right; margin-top: 20px;}
+        .modal .modal-actions button { padding: 8px 15px; cursor: pointer; }
+    </style>
+
+    <script>
+        // Hàm mở modal
+        if (typeof openModal !== 'function') {
+            function openModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) modal.style.display = 'block';
+            }
+        }
+        // Hàm đóng modal
+        if (typeof closeModal !== 'function') {
+            function closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) modal.style.display = 'none';
+            }
+        }
+        // Hàm riêng cho nút "Giới thiệu"
+        function openAboutModal() {
+            openModal('aboutModal');
+        }
+        // Đóng modal khi click ra ngoài
+        window.addEventListener('click', function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</div>
+
 </body>
 </html>

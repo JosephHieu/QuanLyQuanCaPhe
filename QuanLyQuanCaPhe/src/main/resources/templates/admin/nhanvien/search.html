@@ -4,43 +4,9 @@
     <meta charset="UTF-8">
     <title>Tìm kiếm Nhân viên</title>
     <link rel="stylesheet" th:href="@{/css/layout.css}" />
-    <style>
-        .search-form {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .search-form input[type="text"] {
-            flex-grow: 1; /* Chiếm nhiều không gian */
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .search-form button {
-            padding: 10px 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .search-results table { /* Tái sử dụng CSS bảng từ list.html nếu có */
-            width: 100%; border-collapse: collapse; margin-top: 10px; background-color: #fff;
-        }
-        .search-results th, .search-results td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; }
-        .search-results th { background-color: #f4f4f4; font-weight: bold; }
-        .search-results td.col-luong { text-align: right; }
-        .search-results .actions a { /* CSS nút Sửa/Xóa */
-            text-decoration: none; padding: 4px 8px; margin-right: 5px; border-radius: 3px; font-size: 0.9em;
-        }
-        .btn-edit { background-color: #ffc107; color: #333; }
-        .btn-delete { background-color: #dc3545; color: white; }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/employee.css}" />
+
+
 </head>
 <body>
 <div th:insert="~{fragments/header :: header}"></div>
@@ -49,6 +15,7 @@
     <div class="sidebar-wrapper">
         <div th:insert="~{fragments/sidebar :: sidebar}"></div>
         <div th:insert="~{fragments/footer :: footer}"></div>
+
     </div>
 
     <main class="main-content">
@@ -96,5 +63,7 @@
         </div>
     </main>
 </div>
+<div th:insert="~{fragments/footer :: common_modals}"></div>
+
 </body>
 </html>
