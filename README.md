@@ -1,7 +1,7 @@
 # Phần mềm Quản lý Quán Cà Phê (Cafe Management System)
 
 ## `Giới thiệu`
-## `Link Demo:` https://drive.google.com/file/d/1YczOXhhaDIZhhtZ748y9zsBXf1OC3fxv/view?usp=sharing
+#### `Link Demo:` https://drive.google.com/file/d/1YczOXhhaDIZhhtZ748y9zsBXf1OC3fxv/view?usp=sharing
 ### Đây là một dự án web full-stack mô phỏng Hệ thống Quản lý Quán Cà Phê (POS) hoàn chỉnh, được xây dựng từ đầu bằng Spring Boot và Thymeleaf.
 ### Ứng dụng bao gồm các chức năng nghiệp vụ phức tạp từ quản lý nhân viên, kiểm soát kho hàng, quản lý thực đơn (bao gồm định lượng nguyên liệu), đến một giao diện bán hàng trực quan (xem, chuyển, gộp, tách bàn) và hệ thống báo cáo tài chính.
 
@@ -66,10 +66,20 @@ git clone https://github.com/JosephHieu/QuanLyQuanCaPhe.git
 ### Ứng dụng sẽ chạy tại http://localhost:8080
 
 ## `Tài khoản Demo`
-### Admin: 
+### `Admin:` 
 #### - Username: admin
 #### - Password 123456 (Đã mã hóa mật khẩu trong csdl)
 
-### Staff
+### `Staff`
 #### - Username: phucvu01
 #### - Password: 123456 (Đã mã hóa mật khẩu trong csdl)
+
+## `Sơ đồ ERD`
+<img width="2466" height="1435" alt="ERD_Cafe" src="https://github.com/user-attachments/assets/707a0a09-236b-47dc-ad6c-a4e4ea05fdd2" />
+
+## `Lược đồ database`
+<img width="1037" height="813" alt="DB_Cafe" src="https://github.com/user-attachments/assets/e199de9f-abe5-4ffa-9dd0-26eafbc2c834" />
+
+## `Sơ đồ trạng thái`
+<img width="1416" height="1066" alt="image" src="https://github.com/user-attachments/assets/3c7e1183-a7a0-43bd-8028-66c3a2e1d33d" />
+
