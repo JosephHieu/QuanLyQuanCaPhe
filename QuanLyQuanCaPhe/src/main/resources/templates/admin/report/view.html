@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thống kê, Báo cáo</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+    <link rel="stylesheet" th:href="@{/css/report.css}" />
+
+</head>
+<body>
+<div th:insert="~{fragments/header :: header}"></div>
+<div class="page-container">
+    <div class="sidebar-wrapper">
+        <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+        <div th:insert="~{fragments/footer :: footer}"></div>
+    </div>
+    <main class="main-content">
+        <div class="breadcrumb">Thống kê, báo cáo</div>
+
+<form th:action="@{/admin/reports}" method="get" class="filter-section">
+
+    <div class="filter-group">
+        <label>Chọn mục:</label>
+        <label><input type="radio" name="reportType" value="Tất cả" th:checked="${reportTypeSelected == 'Tất cả'}"> Tất cả</label>
+        <label><input type="radio" name="reportType" value="Nhập-xuất" th:checked="${reportTypeSelected == 'Nhập-xuất'}"> Nhập-xuất</label>
+        <label><input type="radio" name="reportType" value="Nhập" th:checked="${reportTypeSelected == 'Nhập'}"> Nhập</label>
+        <label><input type="radio" name="reportType" value="Bán hàng" th:checked="${reportTypeSelected == 'Bán hàng'}"> Bán hàng</label>
+        <label><input type="radio" name="reportType" value="Lương" th:checked="${reportTypeSelected == 'Lương'}"> Lương</label>
+        <label><input type="radio" name="reportType" value="TT nhân viên" th:checked="${reportTypeSelected == 'TT nhân viên'}"> TT nhân viên</label>
+        <label><input type="radio" name="reportType" value="Xuất" th:checked="${reportTypeSelected == 'Xuất'}"> Xuất</label>
+        <label><input type="radio" name="reportType" value="Phí khác" th:checked="${reportTypeSelected == 'Phí khác'}"> Phí khác</label>
+    </div>
+
+    <div class="date-filter">
+        <label for="startDate">Từ ngày:</label>
+        <input type="date" id="startDate" name="startDate" th:value="${startDateSelected}" />
+        <span class="calendar-icon">🗓️</span>
+
+        <label for="endDate" style="margin-left: 15px;">đến ngày:</label>
+        <input type="date" id="endDate" name="endDate" th:value="${endDateSelected}" />
+        <span class="calendar-icon">🗓️</span>
+
+        <button type="submit" style="margin-left: 15px;">Xem</button>
+    </div>
+</form>
+
+        <div class="report-table">
+
+            <div th:if="${isThuChiReport == true}">
+                <h4>Báo cáo Thu - Chi (Tổng hợp từ Hóa đơn và Chi tiêu)</h4>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Ngày</th>
+                        <th class="number-col">Thu <span class="sort-arrow">◆</span></th>
+                        <th class="number-col">Chi <span class="sort-arrow">◆</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="ngay : ${dto.chiTietTheoNgay}">
+                        <td th:text="${#temporals.format(ngay.ngay, 'dd/MM/yyyy')}"></td>
+                        <td class="number-col" th:text="${#numbers.formatDecimal(ngay.tongThu, 0, 'COMMA', 0, 'POINT')}"></td>
+                        <td class="number-col" th:text="${#numbers.formatDecimal(ngay.tongChi, 0, 'COMMA', 0, 'POINT')}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(dto.chiTietTheoNgay)}">
+                        <td colspan="3" style="text-align: center; font-style: italic;">Không có dữ liệu thu chi trong khoảng thời gian này.</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td><strong>Tổng</strong></td>
+                        <td class="number-col"><strong th:text="${#numbers.formatDecimal(dto.tongThuCong, 0, 'COMMA', 0, 'POINT')}"></strong></td>
+                        <td class="number-col"><strong th:text="${#numbers.formatDecimal(dto.tongChiCong, 0, 'COMMA', 0, 'POINT')}"></strong></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div th:if="${isLuongReport == true}">
+                <h4>Báo cáo Lương nhân viên (Toàn thời gian)</h4>
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="stt-col">Stt</th>
+                        <th>Họ tên</th>
+                        <th>Chức vụ</th>
+                        <th class="number-col">Lương</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="nv, iterStat : ${dsNhanVien}">
+                        <td class="stt-col" th:text="${iterStat.count}"></td>
+                        <td th:text="${nv.hoTen}"></td>
+                        <td th:text="${nv.chucVu?.tenChucVu}"></td> <td class="number-col" th:text="${#numbers.formatDecimal(nv.chucVu?.luong, 0, 'COMMA', 0, 'POINT')}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(dsNhanVien)}">
+                        <td colspan="4" style="text-align: center; font-style: italic;">Không có nhân viên nào.</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colspan="3" style="text-align: right;"><strong>Tổng cộng</strong></td>
+                        <td class="number-col">
+                            <strong th:text="${#numbers.formatDecimal(tongLuong, 0, 'COMMA', 0, 'POINT')}"></strong>
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+        </div>
+
+<div class="export-section">
+    <div>
+        <h5>Xuất file</h5>
+        <label><input type="radio" name="exportFormat" value="txt"> .txt - Text File</label>
+        <label><input type="radio" name="exportFormat" value="xls" checked> .xls - Excel File</label>
+        <label><input type="radio" name="exportFormat" value="sql"> .sql - SQL File</label>
+        <button type="button" onclick="exportFile()">Xuất file</button>
+    </div>
+
+    <!-- Máy in   -->
+    <div>
+        <h5>In file</h5>
+        <label for="printPaperSize">Khổ giấy:</label>
+        <select id="printPaperSize" style="padding: 5px; width: 100px;">
+            <option>A4</option>
+            <option>A5</option>
+        </select>
+        <label for="printPrinterName" style="margin-top: 10px;">Máy in:</label>
+        <select id="printPrinterName" style="padding: 5px; width: 150px;">
+            <option>HP Laser</option>
+            <option>Canon XL</option>
+        </select>
+        <label for="printCopies" style="margin-top: 10px;">Số lượng:</label>
+        <input type="number" id="printCopies" value="3" style="padding: 5px; width: 50px;">
+        <button type="button" onclick="alert('Chức năng In file đang phát triển')">In</button>
+    </div>
+</div>
+
+</main>
+</div>
+
+<script th:inline="javascript">
+    function exportFile() {
+        // 1. Lấy tất cả giá trị lọc hiện tại
+        const reportType = document.querySelector('input[name="reportType"]:checked')?.value || 'Tất cả';
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const exportFormat = document.querySelector('input[name="exportFormat"]:checked')?.value || 'xls';
+
+        // 2. Kiểm tra ngày (bắt buộc)
+        if (!startDate || !endDate) {
+            alert('Vui lòng chọn "Từ ngày" và "Đến ngày" trước khi xuất file.');
+            return;
+        }
+
+        // 3. Xây dựng URL cho endpoint export
+        const url = new URL(window.location.origin + '/admin/reports/export');
+        url.searchParams.append('reportType', reportType);
+        url.searchParams.append('startDate', startDate);
+        url.searchParams.append('endDate', endDate);
+        url.searchParams.append('exportFormat', exportFormat);
+
+        console.log('Đang gọi URL xuất file:', url.href);
+
+        // 4. Gọi URL -> Trình duyệt sẽ tự động tải file về
+        window.location.href = url.href;
+    }
+</script>
+</body>
+</html>

@@ -2,6 +2,7 @@ package com.josephhieu.quanlyquancaphe.repository;
 
 import com.josephhieu.quanlyquancaphe.entity.NhanVien;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,4 +16,11 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, String> {
 
     // Tìm nhân viên có Họ Tên chứa từ khóa (không phân biệt hoa/thường)
     List<NhanVien> findByHoTenContainingIgnoreCase(String keyword);
+
+    /**
+     * PHƯƠNG THỨC MỚI (hoặc cập nhật):
+     * Lấy tất cả nhân viên KÈM theo Chức Vụ (để lấy Lương hiệu quả)
+     */
+    @Query("SELECT nv FROM NhanVien nv JOIN FETCH nv.chucVu cv ORDER BY nv.hoTen ASC")
+    List<NhanVien> findAllWithChucVu();
 }

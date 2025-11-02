@@ -36,7 +36,7 @@ public class NhanVienService {
 
     // Lấy tất cả nhân viên
     public List<NhanVien> getAllNhanVien() {
-        return nhanVienRepository.findAll();
+        return nhanVienRepository.findAllWithChucVu();
     }
 
     public List<NhanVien> searchNhanVienByName(String keyword) {
