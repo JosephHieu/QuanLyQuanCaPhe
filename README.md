@@ -42,3 +42,33 @@
 ### Database,MySQL
 ### Build/Dependency,Maven
 ### Libraries,"Lombok, Apache POI (Xuất Excel)"
+
+## 🔧 Cài đặt & Chạy dự án (Local Setup)
+### Yêu cầu: Java (JDK 17+), Maven 3.x+, MySQL 8.x+
+
+## `Clone Repository`
+git clone https://github.com/JosephHieu/QuanLyQuanCaPhe.git
+
+## `Cài đặt Cơ sở dữ liệu`
+### 1. Mở MySQL và tạo một database mới `CREATE DATABASE CafeManagement;`
+### 2. Script SQL để tạo bảng và chèn dữ liệu mẫu (đã bao gồm UUID) nằm ở thư mục `database-script`. Hoặc bạn có thể dựa vào cấu hình spring.jpa.hibernate.ddl-auto (nếu đặt là create hoặc update) để Hibernate tự tạo bảng.
+### 3. Cấu hình kết nối src/main/resources/application.properties và cập nhật thông tin CSDL của bạn:
+### `properties` 
+### spring.datasource.url=jdbc:mysql://localhost:3306/CafeManagement
+### spring.datasource.username=your_username
+### spring.datasource.password=your_password
+### spring.jpa.hibernate.ddl-auto=validate # (hoặc update/create)
+
+## `Chạy Backend`
+### Bạn có thể chạy bằng Maven hoặc trực tiếp từ IDE:
+### Sử dụng `mvn spring-boot:run`
+### Ứng dụng sẽ chạy tại http://localhost:8080
+
+## `Tài khoản Demo`
+### Admin: 
+#### - Username: admin
+#### - Password 123456 (Đã mã hóa mật khẩu trong csdl)
+
+### Staff
+#### - Username: phucvu01
+#### - Password: 123456 (Đã mã hóa mật khẩu trong csdl)
