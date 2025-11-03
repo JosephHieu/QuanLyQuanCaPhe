@@ -18,6 +18,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Lớp Service (Nghiệp vụ) cho các chức năng liên quan đến
+ * Quản lý Kho hàng ({@link HangHoa}).
+ * Bao gồm logic Nhập, Xuất, Sửa, Xóa, Tìm kiếm, và Lấy danh sách hàng hóa.
+ *
+ * @author Joseph Hieu (Tên của bạn)
+ * @version 1.0
+ */
 @Service
 public class HangHoaService {
 
@@ -36,13 +44,29 @@ public class HangHoaService {
     @Autowired
     private DonXuatRepository donXuatRepository;
 
+    /**
+     * Lấy tất cả hàng hóa (nguyên vật liệu) trong kho,
+     * sắp xếp theo Tên hàng hóa (A-Z).
+     *
+     * @return Danh sách (List) các đối tượng {@link HangHoa}.
+     */
     public List<HangHoa> getAllHangHoa() {
-
         return hangHoaRepository.findAllByOrderByTenHangHoaAsc();
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý nhập hàng hóa khỏi kho
+     * Xử lý nghiệp vụ Nhập hàng hóa.
+     * 1. Tìm hoặc tạo mới {@link HangHoa} dựa trên tên.
+     * 2. Cập nhật (cộng dồn) số lượng tồn kho.
+     * 3. (Đang tạm dừng) Ghi lại giao dịch vào bảng {@link DonNhap}.
+     *
+     * @param tenHangHoa     Tên hàng hóa (từ form).
+     * @param soLuongNhap    Số lượng nhập.
+     * @param maDonViTinh    Mã (UUID) của Đơn vị tính.
+     * @param donGiaNhap     Đơn giá tại thời điểm nhập.
+     * @param ngayNhap       Ngày nhập hàng.
+     * @param tenDangNhapNhanVien Tên đăng nhập của nhân viên thực hiện.
+     * @throws NotFoundException Nếu `maDonViTinh` hoặc `tenDangNhapNhanVien` không hợp lệ.
      */
     @Transactional
     public void nhapHangHoa(String tenHangHoa, int soLuongNhap, String maDonViTinh, BigDecimal donGiaNhap, LocalDate ngayNhap, String tenDangNhapNhanVien) {
@@ -59,53 +83,63 @@ public class HangHoaService {
         NhanVien nhanVien = nhanVienRepository.findByTaiKhoan_TenDangNhap(tenDangNhapNhanVien)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên thực hiện."));
 
-        // 3. Tìm hàng hóa theo tên (hoặc tạo mới nếu chưa có)
-        // Cần phương thức findByTenHangHoa trong HangHoaRepository
-        Optional<HangHoa> existingHangHoaOpt = hangHoaRepository.findByTenHangHoaIgnoreCase(tenHangHoa.trim()); // Trim để bỏ khoảng trắng thừa
+        // 3. Tìm hàng hóa theo tên (không phân biệt hoa/thường)
+        Optional<HangHoa> existingHangHoaOpt = hangHoaRepository.findByTenHangHoaIgnoreCase(tenHangHoa.trim());
 
         HangHoa hangHoa;
         if (existingHangHoaOpt.isPresent()) {
             // Hàng hóa đã tồn tại -> Cập nhật số lượng
             hangHoa = existingHangHoaOpt.get();
             hangHoa.setSoLuong(hangHoa.getSoLuong() + soLuongNhap);
-            // Có thể cập nhật đơn giá mới nhất nếu muốn
-            hangHoa.setDonGia(donGiaNhap); // Cập nhật đơn giá theo lần nhập mới nhất
-            hangHoa.setDonViTinh(donViTinh); // Đảm bảo đơn vị tính đúng
+            hangHoa.setDonGia(donGiaNhap); // Cập nhật đơn giá mới nhất
+            hangHoa.setDonViTinh(donViTinh); // Cập nhật đơn vị tính (nếu thay đổi)
             System.out.println("Cập nhật số lượng cho hàng hóa: " + tenHangHoa);
         } else {
             // Hàng hóa mới -> Tạo mới
             hangHoa = new HangHoa();
-            // hangHoa.setMaHangHoa(UUID.randomUUID().toString()); // Không cần nếu dùng @GeneratedValue
             hangHoa.setTenHangHoa(tenHangHoa.trim());
             hangHoa.setSoLuong(soLuongNhap);
             hangHoa.setDonViTinh(donViTinh);
             hangHoa.setDonGia(donGiaNhap);
             System.out.println("Tạo mới hàng hóa: " + tenHangHoa);
         }
-        HangHoa savedHangHoa = hangHoaRepository.save(hangHoa); // Lưu lại hàng hóa
+        HangHoa savedHangHoa = hangHoaRepository.save(hangHoa); // Lưu (Thêm/Sửa) hàng hóa
 
         // 4. Ghi lại giao dịch vào bảng DonNhap
-        // Lưu ý: Thiết kế bảng DonNhap hiện tại có vẻ hơi lạ (cần cả MaThietBi?)
-        // Giả sử ta bỏ qua MaThietBi hoặc dùng một giá trị mặc định/null nếu cột cho phép
+        // !!! CẢNH BÁO: Logic này đang bị tạm dừng (comment)
+        // Cần xem lại thiết kế bảng DonNhap, đặc biệt là vai trò của MaThietBi
+        // khi nhập hàng hóa.
+        /*
         DonNhap donNhap = new DonNhap();
         DonNhapId donNhapId = new DonNhapId();
         donNhapId.setMaNhanVien(nhanVien.getMaNhanVien());
         donNhapId.setMaHangHoa(savedHangHoa.getMaHangHoa());
-        // donNhapId.setMaThietBi("..."); // Cần xử lý MaThietBi này
-        donNhap.setId(donNhapId); // Cần tạo DonNhapId và DonNhapRepository
+        // donNhapId.setMaThietBi("..."); // MaThietBi đang là bắt buộc (NOT NULL)
+        donNhap.setId(donNhapId);
         donNhap.setNhanVien(nhanVien);
         donNhap.setHangHoa(savedHangHoa);
-        // donNhap.setThietBi(...);
+        // donNhap.setThietBi(...); // Cần đối tượng ThietBi
         donNhap.setNgayNhap(ngayNhap);
         donNhap.setSoLuong(soLuongNhap);
         donNhap.setTongTien(donGiaNhap.multiply(BigDecimal.valueOf(soLuongNhap)));
 
-        // donNhapRepository.save(donNhap); // Lưu phiếu nhập
+        donNhapRepository.save(donNhap); // Lưu phiếu nhập
         System.out.println("Đã ghi lại phiếu nhập kho.");
+        */
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý xuất hàng hóa khỏi kho
+     * Xử lý nghiệp vụ Xuất hàng hóa.
+     * 1. Kiểm tra tồn kho.
+     * 2. Trừ lùi số lượng tồn kho.
+     * 3. Ghi lại giao dịch vào bảng {@link DonXuat}.
+     *
+     * @param maHangHoa     Mã (UUID) của hàng hóa cần xuất.
+     * @param soLuongXuat   Số lượng xuất.
+     * @param ngayXuat      Ngày xuất.
+     * @param tenDangNhapNhanVien Tên đăng nhập của nhân viên thực hiện.
+     * @throws NotFoundException Nếu `maHangHoa` không tồn tại.
+     * @throws InsufficientStockException Nếu số lượng xuất > số lượng tồn kho.
      */
     @Transactional
     public void xuatHangHoa(String maHangHoa, int soLuongXuat, LocalDate ngayXuat, String tenDangNhapNhanVien)
@@ -129,14 +163,14 @@ public class HangHoaService {
         NhanVien nhanVien = nhanVienRepository.findByTaiKhoan_TenDangNhap(tenDangNhapNhanVien)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên thực hiện."));
 
-        // 4. Trừ kho
+        // 4. Trừ kho (Cập nhật số lượng)
         hangHoa.setSoLuong(hangHoa.getSoLuong() - soLuongXuat);
         hangHoaRepository.save(hangHoa);
         System.out.println("Đã cập nhật số lượng tồn kho cho: " + hangHoa.getTenHangHoa());
 
         // 5. Ghi lại giao dịch vào bảng DonXuat
         DonXuat donXuat = new DonXuat();
-        // donXuat.setMaDonXuat(UUID.randomUUID().toString()); // Không cần nếu dùng @GeneratedValue
+        // MaDonXuat sẽ được tự tạo bằng @GeneratedValue(strategy = GenerationType.UUID)
         donXuat.setNhanVien(nhanVien);
         donXuat.setHangHoa(hangHoa);
         donXuat.setNgayXuat(ngayXuat);
@@ -149,32 +183,46 @@ public class HangHoaService {
     }
 
     /**
-     * Lấy hàng hóa theo ID
+     * Lấy thông tin một Hàng hóa bằng ID (UUID).
+     *
+     * @param maHangHoa Mã (UUID) của hàng hóa.
+     * @return Optional<HangHoa> chứa hàng hóa nếu tìm thấy.
      */
     public Optional<HangHoa> getHangHoaById(String maHangHoa) {
         return hangHoaRepository.findById(maHangHoa);
     }
 
-    // Lưu hàng hóa hoặc thêm mới
+    /**
+     * Phương thức lưu (Thêm mới hoặc Cập nhật) Hàng hóa cơ bản.
+     * (Chủ yếu được gọi bởi `updateHangHoa`).
+     *
+     * @param hangHoa Đối tượng HangHoa cần lưu.
+     * @return Đối tượng HangHoa đã được lưu.
+     * @throws IllegalArgumentException Nếu thông tin không hợp lệ.
+     */
     @Transactional
     public HangHoa saveHangHoa(HangHoa hangHoa) {
-        // Basic validation
+        // Validation cơ bản
         if (hangHoa.getTenHangHoa() == null || hangHoa.getTenHangHoa().trim().isEmpty() ||
                 hangHoa.getDonViTinh() == null || hangHoa.getDonViTinh().getMaDonViTinh() == null ||
                 hangHoa.getSoLuong() < 0 || hangHoa.getDonGia() == null || hangHoa.getDonGia().compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Thông tin hàng hóa không hợp lệ.");
         }
-        // Ensure DonViTinh object is managed if only ID is passed from form potentially
-        // (Controller usually handles fetching the full DonViTinh object)
         return hangHoaRepository.save(hangHoa);
     }
 
     /**
-     * Cập nhật thông tin Hàng hóa (Dùng riêng cho form Sửa)
+     * Cập nhật thông tin chi tiết của một Hàng hóa (dùng cho form Sửa).
+     *
+     * @param maHangHoa     Mã (UUID) của hàng hóa cần sửa.
+     * @param dataFromForm  Đối tượng HangHoa chứa dữ liệu mới từ form (Tên, SL, Đơn giá).
+     * @param maDonViTinh   Mã (UUID) của Đơn vị tính mới.
+     * @return Đối tượng HangHoa đã được cập nhật.
+     * @throws NotFoundException Nếu `maHangHoa` hoặc `maDonViTinh` không tồn tại.
      */
     @Transactional
     public HangHoa updateHangHoa(String maHangHoa, HangHoa dataFromForm, String maDonViTinh) throws NotFoundException {
-        // 1. Lấy HangHoa gốc
+        // 1. Lấy HangHoa gốc từ CSDL
         HangHoa originalHangHoa = hangHoaRepository.findById(maHangHoa)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy hàng hóa: " + maHangHoa));
 
@@ -184,60 +232,69 @@ public class HangHoaService {
 
         // 3. Cập nhật các trường
         originalHangHoa.setTenHangHoa(dataFromForm.getTenHangHoa().trim());
-        originalHangHoa.setSoLuong(dataFromForm.getSoLuong()); // Cho phép sửa số lượng tồn kho trực tiếp? (Cẩn thận)
+        originalHangHoa.setSoLuong(dataFromForm.getSoLuong()); // Cảnh báo: Sửa trực tiếp tồn kho
         originalHangHoa.setDonGia(dataFromForm.getDonGia());
         originalHangHoa.setDonViTinh(donViTinh);
-        // Không cập nhật ngày nhập/xuất ở đây
 
         // 4. Lưu lại
         return hangHoaRepository.save(originalHangHoa);
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Tìm kiếm hàng hóa theo tên
+     * Tìm kiếm hàng hóa dựa trên từ khóa (keyword).
+     * Nếu từ khóa rỗng, trả về tất cả hàng hóa (theo yêu cầu nghiệp vụ).
+     *
+     * @param keyword Từ khóa tìm kiếm.
+     * @return Danh sách HangHoa khớp.
      */
     public List<HangHoa> searchHangHoa(String keyword) {
-        // Nếu không có từ khóa hoặc từ khóa rỗng, trả về danh sách rỗng
         if (keyword == null || keyword.trim().isEmpty()) {
-            return getAllHangHoa(); // Gọi hàm lấy tất cả hàng hóa
+            return getAllHangHoa(); // Trả về tất cả nếu không có từ khóa
         }
-
         return hangHoaRepository.findByTenHangHoaContainingIgnoreCase(keyword.trim());
     }
 
+    /**
+     * Xóa một Hàng hóa dựa trên ID (UUID).
+     *
+     * @param maHangHoa Mã (UUID) của hàng hóa cần xóa.
+     * @throws NotFoundException Nếu không tìm thấy hàng hóa.
+     * @throws DataIntegrityViolationException Nếu hàng hóa đang được sử dụng ở bảng khác
+     * (DonNhap, DonXuat, ChiTietThucDon).
+     */
     @Transactional
     public void deleteHangHoa(String maHangHoa) throws NotFoundException, DataIntegrityViolationException {
-
-        // 1. Kiểm tra xem hàng hóa có tồn tại không
+        // 1. Kiểm tra tồn tại
         if (!hangHoaRepository.existsById(maHangHoa)) {
             throw new NotFoundException("Không tìm thấy hàng hóa để xóa: " + maHangHoa);
         }
-
-        // 2. Thực hiện xóa
+        // 2. Thử xóa
         try {
             hangHoaRepository.deleteById(maHangHoa);
             System.out.println("Đã xóa hàng hóa ID: " + maHangHoa);
-
         } catch (DataIntegrityViolationException e) {
-            // 3. Bắt lỗi nếu CSDL không cho xóa (do ràng buộc khóa ngoại)
-            // Ví dụ: Hàng hóa này đã có trong 1 Đơn nhập, Đơn xuất, hoặc Chi tiết thực đơn
+            // 3. Bắt lỗi nếu CSDL không cho phép xóa
             System.err.println("Lỗi xóa hàng hóa do ràng buộc: " + e.getMessage());
             throw new DataIntegrityViolationException("Không thể xóa hàng hóa này vì đang được sử dụng (ví dụ: đã nhập/xuất kho hoặc có trong thực đơn).");
         }
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Lấy danh sách nguyên liệu (dưới dạng DTO) cho dropdown
+     * Lấy danh sách nguyên liệu (Hàng hóa) dưới dạng DTO
+     * để sử dụng trong dropdown (ô chọn) ở frontend.
+     * Phương thức này sử dụng query JOIN FETCH để giải quyết lỗi N+1
+     * và lỗi Lazy Loading khi chuyển đổi sang JSON.
+     *
+     * @return Danh sách {@link NguyenLieuDropdownDTO}.
      */
-    @Transactional(readOnly = true) // Đảm bảo session mở khi truy cập donViTinh
+    @Transactional(readOnly = true)
     public List<NguyenLieuDropdownDTO> getNguyenLieuForDropdown() {
-        // Gọi query JOIN FETCH
+        // Gọi query JOIN FETCH (findAllWithDonViTinh)
         return hangHoaRepository.findAllWithDonViTinh().stream()
                 .map(hh -> new NguyenLieuDropdownDTO(
                         hh.getMaHangHoa(),
                         hh.getTenHangHoa(),
-                        // Lấy Tên đơn vị (an toàn nếu donViTinh là null)
-                        (hh.getDonViTinh() != null) ? hh.getDonViTinh().getTenDonVi() : ""
+                        (hh.getDonViTinh() != null) ? hh.getDonViTinh().getTenDonVi() : "" // Lấy Tên ĐVT (an toàn)
                 ))
                 .collect(Collectors.toList());
     }

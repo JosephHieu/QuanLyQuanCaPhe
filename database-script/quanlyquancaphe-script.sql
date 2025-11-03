@@ -1,9 +1,10 @@
 -- ==========================================================
 -- BƯỚC 1: XÓA VÀ TẠO LẠI CƠ SỞ DỮ LIỆU
 -- ==========================================================
-DROP DATABASE IF EXISTS quanlyquancaphe;
-CREATE DATABASE quanlyquancaphe;
-USE quanlyquancaphe;
+
+DROP DATABASE IF EXISTS CafeManagement;
+CREATE DATABASE CafeManagement;
+USE CafeManagement;
 
 -- ==========================================================
 -- BƯỚC 2: TẠO LẠI CÁC BẢNG VỚI VARCHAR(36)
@@ -197,7 +198,7 @@ INSERT INTO DonViTinh (MaDonViTinh, TenDonVi) VALUES
 -- 3. Bảng TaiKhoan (Sử dụng mật khẩu đã mã hóa BCrypt cho '123')
 SET @tk_admin = UUID(); SET @tk_phache01 = UUID(); SET @tk_thungan01 = UUID(); SET @tk_phucvu01 = UUID(); SET @tk_baove01 = UUID();
 SET @tk_tapvu01 = UUID(); SET @tk_phoql = UUID(); SET @tk_phache02 = UUID(); SET @tk_phucvu02 = UUID(); SET @tk_thuctap01 = UUID();
-SET @hashed_pw = '$2a$10$3/q.w5y.1nE.8.e.E...'; -- **Thay bằng mã hash BCrypt của '123' bạn tạo ra**
+SET @hashed_pw = '$2a$10$Sxl6QVPA.zKVifB4g6hQzum3dOcOn8wmrz8yQHf6rlOJyZGU1POg6'; -- **Thay bằng mã hash BCrypt của '123' bạn tạo ra**
 INSERT INTO TaiKhoan (MaTaiKhoan, TenDangNhap, MatKhau, QuyenHan, Anh) VALUES
 (@tk_admin, 'admin', @hashed_pw, 'Admin', NULL), (@tk_phache01, 'phache01', @hashed_pw, 'Staff', NULL),
 (@tk_thungan01, 'thungan01', @hashed_pw, 'Staff', NULL), (@tk_phucvu01, 'phucvu01', @hashed_pw, 'Staff', NULL),

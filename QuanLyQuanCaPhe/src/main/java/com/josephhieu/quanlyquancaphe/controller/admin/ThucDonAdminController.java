@@ -20,6 +20,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controller chịu trách nhiệm xử lý các yêu cầu của Admin
+ * liên quan đến nghiệp vụ Quản lý Thực đơn (Menu).
+ * Bao gồm Xem, Thêm, Sửa, Xóa, và Tìm kiếm món ăn.
+ * Các URL đều có tiền tố /admin.
+ *
+ * @author Joseph Hieu
+ * @version 1.0
+ * @since 2025-11-03
+ */
 @Controller
 @RequestMapping("/admin")
 public class ThucDonAdminController {
@@ -30,13 +40,15 @@ public class ThucDonAdminController {
     @Autowired
     private HangHoaService hangHoaService;
 
-
-
-    @Autowired private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
-     * Hiển thị trang Danh sách Thực đơn
-     * URL: /admin/thucdon
+     * Hiển thị trang danh sách tất cả món ăn trong thực đơn.
+     * Xử lý URL: GET /admin/thucdon
+     *
+     * @param model Model để truyền danh sách món ăn (dsThucDon) ra view.
+     * @return Tên view template "admin/thucdon/list".
      */
     @GetMapping("/thucdon")
     public String showThucDonList(Model model) {
@@ -54,8 +66,12 @@ public class ThucDonAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Hiển thị form Thêm món
-     * URL: /admin/thucdon/them
+     * Hiển thị form để thêm một món ăn mới.
+     * Gửi một DTO rỗng (thucDonForm) và danh sách nguyên liệu (dsNguyenLieuJson) ra view.
+     * Xử lý URL: GET /admin/thucdon/them
+     *
+     * @param model Model để truyền dữ liệu ra view.
+     * @return Tên view template "admin/thucdon/form".
      */
     @GetMapping("/thucdon/them")
     public String showThemThucDonForm(Model model) {
@@ -75,8 +91,13 @@ public class ThucDonAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý lưu món mới
-     * URL: /admin/thucdon/save (POST)
+     * Xử lý việc lưu một món ăn mới (bao gồm cả các thành phần).
+     * Xử lý URL: POST /admin/thucdon/save
+     *
+     * @param thucDonForm        Đối tượng DTO được bind từ form (chứa tên, giá, và list thành phần).
+     * @param redirectAttributes Dùng để gửi thông báo (success/error) khi chuyển hướng.
+     * @param model              Dùng để trả về form nếu có lỗi validation.
+     * @return Chuyển hướng về trang danh sách nếu thành công, ngược lại trả về form.
      */
     @PostMapping("/thucdon/save")
     public String saveThucDon(
@@ -106,8 +127,12 @@ public class ThucDonAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Hiển thị trang Tìm kiếm và xử lý
-     * URL: /admin/thucdon/timkiem
+     * Hiển thị trang Tìm kiếm và xử lý kết quả tìm kiếm món ăn.
+     * Xử lý URL: GET /admin/thucdon/timkiem
+     *
+     * @param keyword Từ khóa tìm kiếm (lấy từ URL param, không bắt buộc).
+     * @param model Model để truyền kết quả (dsKetQua) và từ khóa (keyword) ra view.
+     * @return Tên view template "admin/thucdon/search".
      */
     @GetMapping("/thucdon/timkiem")
     public String showThucDonSearchPage(
@@ -125,8 +150,12 @@ public class ThucDonAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý xóa món ăn
-     * URL: /admin/thucdon/delete/{id}
+     * Xử lý nghiệp vụ Xóa món ăn (và các thành phần liên quan).
+     * Xử lý URL: GET /admin/thucdon/delete/{id}
+     *
+     * @param maThucDon Mã UUID của món ăn cần xóa (lấy từ URL path).
+     * @param redirectAttributes Dùng để gửi thông báo (success/error) khi chuyển hướng.
+     * @return Chuyển hướng về trang danh sách (/admin/thucdon).
      */
     @GetMapping("/thucdon/delete/{id}")
     public String deleteThucDon(@PathVariable("id") String maThucDon, RedirectAttributes redirectAttributes) {
@@ -143,7 +172,12 @@ public class ThucDonAdminController {
     }
 
     /**
-     * Hiển thị form Chỉnh sửa (ĐÃ SỬA LẠI)
+     * Hiển thị form Chỉnh sửa món ăn với dữ liệu cũ (bao gồm cả thành phần).
+     * Xử lý URL: GET /admin/thucdon/edit/{id}
+     *
+     * @param maThucDon Mã UUID của món ăn (lấy từ URL path).
+     * @param model Model để truyền DTO (thucDonForm) và JSON (thanhPhanJson, dsNguyenLieuJson) ra view.
+     * @return Tên view template "admin/thucdon/form" (dùng chung).
      */
     @GetMapping("/thucdon/edit/{id}")
     public String showEditThucDonForm(@PathVariable("id") String maThucDon, Model model) {
@@ -169,8 +203,14 @@ public class ThucDonAdminController {
     }
 
     /**
-     * Xử lý lưu Chỉnh sửa
-     * URL: /admin/thucdon/update (POST)
+     * Xử lý Cập nhật (lưu) món ăn đã chỉnh sửa.
+     * Logic nghiệp vụ: Xóa tất cả thành phần cũ, thêm lại thành phần mới.
+     * Xử lý URL: POST /admin/thucdon/update
+     *
+     * @param thucDonForm        Đối tượng DTO được bind từ form (đã chứa maThucDon).
+     * @param redirectAttributes Dùng để gửi thông báo khi chuyển hướng.
+     * @param model              Dùng để trả về form nếu có lỗi.
+     * @return Chuyển hướng về trang danh sách nếu thành công, ngược lại trả về form.
      */
     @PostMapping("/thucdon/update")
     public String updateThucDon(

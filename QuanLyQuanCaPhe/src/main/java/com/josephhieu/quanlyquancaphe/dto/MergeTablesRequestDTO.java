@@ -5,10 +5,24 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * DTO (Data Transfer Object) dùng để đóng gói yêu cầu "Gộp bàn"
+ * từ JavaScript (fetch) gửi lên {@link com.josephhieu.quanlyquancaphe.controller.SalesController}.
+ *
+ * @author Joseph Hieu (Tên của bạn)
+ * @version 1.0
+ */
 @Data
-@NoArgsConstructor
+@NoArgsConstructor // Cần cho Jackson (JSON Deserialization)
 public class MergeTablesRequestDTO {
 
-    private List<String> sourceTableIds; // Danh sách ID các bàn cần gộp
-    private String destinationTableId; // ID bàn sẽ gộp đến
+    /**
+     * Danh sách các Mã (UUID) của các bàn nguồn (bàn bị gộp).
+     */
+    private List<String> sourceTableIds;
+
+    /**
+     * Mã (UUID) của bàn đích (bàn được gộp vào).
+     */
+    private String destinationTableId;
 }

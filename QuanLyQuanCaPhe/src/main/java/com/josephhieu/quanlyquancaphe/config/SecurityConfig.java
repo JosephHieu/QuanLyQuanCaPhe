@@ -9,19 +9,42 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * Lớp cấu hình chính cho Spring Security.
+ * Kích hoạt bảo mật web (@EnableWebSecurity) và định nghĩa các quy tắc
+ * truy cập, trang đăng nhập, và xử lý đăng xuất.
+ *
+ * @author Joseph Hieu
+ * @version 1.0
+ */
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity // Kích hoạt tính năng bảo mật web của Spring Security
 public class SecurityConfig {
 
     @Autowired
     private CustomAuthenticationSuccessHandler successHandler;
 
+    /**
+     * Định nghĩa một Bean {@link PasswordEncoder} để mã hóa mật khẩu.
+     * Chúng ta sử dụng BCrypt, một thuật toán mã hóa một chiều mạnh và an toàn.
+     * Bean này sẽ được Spring Security tự động sử dụng để
+     * so sánh mật khẩu thô (raw password) từ form với mật khẩu đã mã hóa (hashed) trong CSDL.
+     *
+     * @return một implement của PasswordEncoder (cụ thể là BCryptPasswordEncoder).
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 2. Cấu hình chuỗi lọc bảo mật (Security Filter Chain)
+    /**
+     * Cấu hình "Chuỗi Lọc Bảo mật" (Security Filter Chain).
+     * Đây là nơi trung tâm để định nghĩa các quy tắc "ai được phép truy cập cái gì".
+     *
+     * @param http Đối tượng HttpSecurity để xây dựng các quy tắc bảo mật.
+     * @return một {@link SecurityFilterChain} đã được cấu hình.
+     * @throws Exception nếu có lỗi xảy ra trong quá trình cấu hình.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

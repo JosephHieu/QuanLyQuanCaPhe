@@ -12,6 +12,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+/**
+ * Controller chịu trách nhiệm xử lý các yêu cầu của Admin
+ * liên quan đến nghiệp vụ Quản lý Trang thiết bị (CRUD).
+ * Tất cả các URL trong controller này đều có tiền tố /admin.
+ *
+ * @author Joseph Hieu (Tên của bạn)
+ * @version 1.0
+ * @since 2025-11-03
+ */
 @Controller
 @RequestMapping("/admin")
 public class ThietBiAdminController {
@@ -20,8 +29,11 @@ public class ThietBiAdminController {
     private ThietBiService thietBiService;
 
     /**
-     * Hiển thị trang Danh sách Thiết bị
-     * URL: /admin/thietbi
+     * Hiển thị trang danh sách tất cả thiết bị.
+     * Xử lý URL: GET /admin/thietbi
+     *
+     * @param model Model để truyền danh sách thiết bị (dsThietBi) ra view.
+     * @return Tên của file view (template) "admin/thietbi/list".
      */
     @GetMapping("/thietbi")
     public String showThietBiList(Model model) {
@@ -36,8 +48,13 @@ public class ThietBiAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý lưu thiết bị mới
-     * URL: /admin/thietbi/save (POST)
+     * Xử lý việc lưu một thiết bị mới vào CSDL.
+     * Phương thức này được gọi bởi form "Thêm thiết bị".
+     * Xử lý URL: POST /admin/thietbi/save
+     *
+     * @param thietBi Đối tượng ThietBi được bind tự động từ dữ liệu form (th:object).
+     * @param model Model để trả về thông báo lỗi và dữ liệu nếu validation thất bại.
+     * @return Chuyển hướng về trang danh sách nếu thành công, ngược lại trả về form.
      */
     @PostMapping("/thietbi/save")
     public String saveThietBi(@ModelAttribute("thietBi") ThietBi thietBi, Model model) {
@@ -69,8 +86,11 @@ public class ThietBiAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Hiển thị form Thêm thiết bị
-     * URL: /admin/thietbi/them
+     * Hiển thị form để thêm một thiết bị mới.
+     * Xử lý URL: GET /admin/thietbi/them
+     *
+     * @param model Model để truyền một đối tượng ThietBi rỗng ra form.
+     * @return Tên của file view (template) "admin/thietbi/form".
      */
     @GetMapping("/thietbi/them")
     public String showThemThietBiForm(Model model) {
@@ -83,8 +103,12 @@ public class ThietBiAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Show Edit Equipment Form
-     * URL: /admin/thietbi/edit/{id}
+     * Hiển thị form Chỉnh sửa thiết bị với dữ liệu cũ đã được điền sẵn.
+     * Xử lý URL: GET /admin/thietbi/edit/{id}
+     *
+     * @param maThietBi Mã UUID của thiết bị (lấy từ URL path).
+     * @param model Model để truyền đối tượng ThietBi tìm được ra view.
+     * @return Tên view template "admin/thietbi/form" (dùng chung).
      */
     @GetMapping("/thietbi/edit/{id}")
     public String showEditThietBiForm(@PathVariable("id") String maThietBi, Model model) {
@@ -103,8 +127,12 @@ public class ThietBiAdminController {
     }
 
     /**
-     * XỬ LÝ CẬP NHẬT THIẾT BỊ
-     * URL: /admin/thietbi/update (POST)
+     * Xử lý Cập nhật (lưu) thông tin thiết bị đã chỉnh sửa.
+     * Xử lý URL: POST /admin/thietbi/update
+     *
+     * @param thietBi Đối tượng ThietBi được bind từ form (đã chứa maThietBi).
+     * @param model Model để trả về thông báo lỗi nếu thất bại.
+     * @return Chuyển hướng về trang danh sách nếu thành công, ngược lại trả về form.
      */
     @PostMapping("/admin/thietbi/update")
     public String updateThietBi(@ModelAttribute("thietBi") ThietBi thietBi, Model model) {
@@ -135,8 +163,12 @@ public class ThietBiAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý xóa thiết bị
-     * URL: /admin/thietbi/delete/{id} (GET)
+     * Xử lý nghiệp vụ Xóa thiết bị.
+     * Xử lý URL: GET /admin/thietbi/delete/{id}
+     *
+     * @param maThietBi Mã UUID của thiết bị cần xóa (lấy từ URL path).
+     * @param redirectAttributes Dùng để gửi thông báo (success/error) khi chuyển hướng.
+     * @return Chuyển hướng về trang danh sách (/admin/thietbi).
      */
     @GetMapping("/thietbi/delete/{id}")
     public String deleteThietBi(@PathVariable("id") String maThietBi, RedirectAttributes redirectAttributes) {

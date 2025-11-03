@@ -12,25 +12,44 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Lớp Service (Nghiệp vụ) cho các chức năng liên quan đến Thiết bị ({@link ThietBi}).
+ * Bao gồm logic CRUD cho quản lý thiết bị.
+ *
+ * @author Joseph Hieu (Tên của bạn)
+ * @version 1.0
+ */
 @Service
 public class ThietBiService {
 
     @Autowired
     private ThietBiRepository thietBiRepository;
 
+    /**
+     * Lấy tất cả thiết bị, sắp xếp theo Tên (tenThietBi).
+     *
+     * @return Danh sách {@link ThietBi}.
+     */
     public List<ThietBi> getAllThietBi() {
         return thietBiRepository.findAll(Sort.by("tenThietBi"));
     }
 
     /**
-     * Lấy thiết bị theo ID
+     * Lấy thông tin một Thiết bị bằng ID (UUID).
+     *
+     * @param maThietBi Mã (UUID) của thiết bị.
+     * @return Optional<ThietBi> chứa thiết bị nếu tìm thấy.
      */
     public Optional<ThietBi> getThietBiById(String maThietBi) {
         return thietBiRepository.findById(maThietBi);
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Lưu thiết bị (Thêm mới hoặc Cập nhật)
+     * Lưu (Thêm mới hoặc Cập nhật) một Thiết bị.
+     * JPA sẽ tự động nhận diện là Thêm mới (nếu ID null) hoặc Cập nhật (nếu ID đã tồn tại).
+     *
+     * @param thietBi Đối tượng ThietBi cần lưu.
+     * @return Đối tượng ThietBi đã được lưu.
      */
     @Transactional // Đảm bảo lưu thành công
     public ThietBi saveThietBi(ThietBi thietBi) {
@@ -39,7 +58,12 @@ public class ThietBiService {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xóa thiết bị theo ID
+     * Xóa một Thiết bị dựa trên ID (UUID).
+     *
+     * @param maThietBi Mã (UUID) của thiết bị cần xóa.
+     * @throws NotFoundException Nếu không tìm thấy thiết bị.
+     * @throws DataIntegrityViolationException Nếu thiết bị đang được sử dụng
+     * (ví dụ: đã có trong {@link // DonNhap}).
      */
     @Transactional
     public void deleteThietBiById(String maThietBi) throws NotFoundException, DataIntegrityViolationException {

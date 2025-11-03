@@ -3,8 +3,8 @@ package com.josephhieu.quanlyquancaphe.service;
 import com.josephhieu.quanlyquancaphe.dto.ChiTieuDTO;
 import com.josephhieu.quanlyquancaphe.dto.ThuChiNgayDTO;
 import com.josephhieu.quanlyquancaphe.dto.TongThuChiDTO;
-import com.josephhieu.quanlyquancaphe.entity.ChiTieu; // Import
-import com.josephhieu.quanlyquancaphe.entity.HoaDon; // Import
+import com.josephhieu.quanlyquancaphe.entity.ChiTieu;
+import com.josephhieu.quanlyquancaphe.entity.HoaDon;
 import com.josephhieu.quanlyquancaphe.entity.NhanVien;
 import com.josephhieu.quanlyquancaphe.entity.TaiKhoan;
 import com.josephhieu.quanlyquancaphe.exception.NotFoundException;
@@ -21,8 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors; // Import
+import java.util.stream.Collectors;
 
+/**
+ * Lớp Service (Nghiệp vụ) cho các chức năng liên quan đến Ngân sách.
+ * Bao gồm logic tổng hợp Thu/Chi cho báo cáo và CRUD các khoản Chi tiêu.
+ *
+ * @author Joseph Hieu (Tên của bạn)
+ * @version 1.0
+ */
 @Service
 public class NganSachService {
 
@@ -35,69 +42,79 @@ public class NganSachService {
     @Autowired
     private NhanVienRepository nhanVienRepository;
 
-    @Transactional(readOnly = true) // Vẫn nên dùng Transactional
+    /**
+     * Tổng hợp dữ liệu Thu (từ Hóa đơn đã thanh toán) và Chi (từ Chi tiêu)
+     * trong một khoảng ngày và nhóm theo ngày.
+     * Sử dụng Java Streams để xử lý việc nhóm và tính tổng (thay vì JPQL phức tạp).
+     *
+     * @param startDate Ngày bắt đầu.
+     * @param endDate   Ngày kết thúc.
+     * @return Một {@link TongThuChiDTO} chứa danh sách chi tiết và tổng cộng.
+     */
+    @Transactional(readOnly = true)
     public TongThuChiDTO getTongHopThuChi(LocalDate startDate, LocalDate endDate) {
 
-        // 1. Lấy danh sách thô Hóa đơn (Thu)
+        // 1. Lấy danh sách thô Hóa đơn (Thu) đã thanh toán
         List<HoaDon> danhSachThu = hoaDonRepository.findByTrangThaiTrueAndNgayGioTaoBetween(
                 startDate.atStartOfDay(),
-                endDate.plusDays(1).atStartOfDay() // +1 ngày để bao gồm cả ngày kết thúc
+                endDate.plusDays(1).atStartOfDay() // .plusDays(1) để bao gồm cả ngày kết thúc
         );
 
         // 2. Lấy danh sách thô Chi tiêu (Chi)
         List<ChiTieu> danhSachChi = chiTieuRepository.findByNgayChiBetween(startDate, endDate);
 
-        // 3. Dùng Java Streams để Nhóm (Group By) và Tính tổng (Sum)
-
-        // Nhóm Hóa đơn theo Ngày và tính tổng TongTien
+        // 3. Dùng Streams: Nhóm Hóa đơn theo Ngày và tính tổng TongTien
         Map<LocalDate, BigDecimal> mapThu = danhSachThu.stream()
                 .collect(Collectors.groupingBy(
-                        hd -> hd.getNgayGioTao().toLocalDate(), // Nhóm theo ngày
-                        TreeMap::new, // Dùng TreeMap để tự sắp xếp ngày
+                        hd -> hd.getNgayGioTao().toLocalDate(), // Key là Ngày
+                        TreeMap::new, // Dùng TreeMap để tự sắp xếp theo Ngày
                         Collectors.reducing(BigDecimal.ZERO, HoaDon::getTongTien, BigDecimal::add) // Tính tổng
                 ));
 
-        // Nhóm Chi tiêu theo Ngày và tính tổng SoTien
+        // 4. Dùng Streams: Nhóm Chi tiêu theo Ngày và tính tổng SoTien
         Map<LocalDate, BigDecimal> mapChi = danhSachChi.stream()
                 .collect(Collectors.groupingBy(
-                        ChiTieu::getNgayChi, // Nhóm theo ngày
+                        ChiTieu::getNgayChi, // Key là Ngày
                         TreeMap::new, // Dùng TreeMap
                         Collectors.reducing(BigDecimal.ZERO, ChiTieu::getSoTien, BigDecimal::add) // Tính tổng
                 ));
 
-        // 4. Gộp 2 Map (Thu và Chi) lại
+        // 5. Gộp 2 Map (Thu và Chi) lại
         Map<LocalDate, ThuChiNgayDTO> mapTongHop = new TreeMap<>();
-
-        // Thêm Thu vào Map tổng hợp
         mapThu.forEach((ngay, tongThu) -> {
-            mapTongHop.put(ngay, new ThuChiNgayDTO(ngay, tongThu, BigDecimal.ZERO));
+            mapTongHop.put(ngay, new ThuChiNgayDTO(ngay, tongThu, BigDecimal.ZERO)); // Thêm Thu
         });
-
-        // Thêm Chi vào Map tổng hợp
         mapChi.forEach((ngay, tongChi) -> {
-            // Kiểm tra xem ngày này đã có (từ Thu) chưa
-            ThuChiNgayDTO ngayDTO = mapTongHop.get(ngay);
-            if (ngayDTO != null) {
-                ngayDTO.setTongChi(tongChi); // Cập nhật Chi
-            } else {
-                mapTongHop.put(ngay, new ThuChiNgayDTO(ngay, BigDecimal.ZERO, tongChi)); // Thêm mới
-            }
+            mapTongHop.compute(ngay, (key, dto) -> {
+                if (dto == null) {
+                    return new ThuChiNgayDTO(key, BigDecimal.ZERO, tongChi); // Thêm Chi (nếu ngày chưa có)
+                } else {
+                    dto.setTongChi(tongChi); // Cập nhật Chi (nếu ngày đã có từ Thu)
+                    return dto;
+                }
+            });
         });
 
-        // 5. Tính toán tổng cộng
+        // 6. Tính toán tổng cộng
         BigDecimal tongThuCong = mapThu.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal tongChiCong = mapChi.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 6. Trả về DTO tổng hợp
+        // 7. Trả về DTO tổng hợp
         return new TongThuChiDTO(
-                mapTongHop.values().stream().collect(Collectors.toList()), // Chuyển Map về List
+                new ArrayList<>(mapTongHop.values()), // Chuyển Map về List
                 tongThuCong,
                 tongChiCong
         );
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Lưu (Thêm/Sửa) nhiều khoản chi
+     * Lưu (Thêm mới hoặc Cập nhật) một danh sách các khoản Chi tiêu
+     * từ form động "Thêm chi tiêu".
+     *
+     * @param dtos                Danh sách {@link ChiTieuDTO} từ form.
+     * @param tenDangNhapNhanVien Tên đăng nhập của người thực hiện.
+     * @throws NotFoundException Nếu không tìm thấy nhân viên hoặc khoản chi cần sửa.
+     * @throws IllegalArgumentException Nếu dữ liệu DTO không hợp lệ.
      */
     @Transactional
     public void saveChiTieuList(List<ChiTieuDTO> dtos, String tenDangNhapNhanVien) {
@@ -109,7 +126,7 @@ public class NganSachService {
         List<ChiTieu> chiTieuListToSave = new ArrayList<>();
 
         for (ChiTieuDTO dto : dtos) {
-            // Bỏ qua nếu không có dữ liệu (dòng trống)
+            // Bỏ qua nếu dòng trống (không có ngày VÀ không có tên)
             if (dto.getNgayChi() == null && (dto.getTenKhoanChi() == null || dto.getTenKhoanChi().trim().isEmpty())) {
                 continue;
             }
@@ -122,13 +139,13 @@ public class NganSachService {
 
             ChiTieu chiTieu;
             if (dto.getMaChiTieu() != null && !dto.getMaChiTieu().isEmpty()) {
-                // Đây là SỬA
+                // SỬA: Tìm khoản chi cũ
                 chiTieu = chiTieuRepository.findById(dto.getMaChiTieu())
                         .orElseThrow(() -> new NotFoundException("Không tìm thấy chi tiêu: " + dto.getMaChiTieu()));
             } else {
-                // Đây là THÊM MỚI
+                // THÊM MỚI: Tạo khoản chi mới
                 chiTieu = new ChiTieu();
-                chiTieu.setTaiKhoan(taiKhoan); // Chỉ gán tài khoản khi thêm mới
+                chiTieu.setTaiKhoan(taiKhoan); // Gán tài khoản (người chi)
             }
 
             // Cập nhật dữ liệu
@@ -139,7 +156,7 @@ public class NganSachService {
             chiTieuListToSave.add(chiTieu);
         }
 
-        // Lưu tất cả thay đổi
+        // Lưu tất cả thay đổi (Thêm mới và Sửa) vào CSDL
         if (!chiTieuListToSave.isEmpty()) {
             chiTieuRepository.saveAll(chiTieuListToSave);
             System.out.println("Đã lưu " + chiTieuListToSave.size() + " khoản chi tiêu.");
@@ -147,11 +164,12 @@ public class NganSachService {
     }
 
     /**
-     * PHƯƠG THỨC MỚI: Lấy các khoản chi gần đây (ví dụ: 7 ngày)
-     * Được gọi bởi NganSachAdminController.showThemChiTieuForm
+     * Lấy các khoản chi tiêu gần đây (ví dụ: trong vòng 7 ngày qua).
+     * Dùng để hiển thị sẵn trong form "Thêm chi tiêu".
+     *
+     * @return Danh sách {@link ChiTieu}.
      */
     public List<ChiTieu> getRecentChiTieu() {
-        // Lấy các khoản chi trong vòng 7 ngày qua
         LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
         return chiTieuRepository.findByNgayChiAfterOrderByNgayChiDesc(sevenDaysAgo);
     }

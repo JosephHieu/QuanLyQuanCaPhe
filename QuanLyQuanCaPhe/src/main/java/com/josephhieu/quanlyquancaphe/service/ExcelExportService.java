@@ -3,7 +3,7 @@ package com.josephhieu.quanlyquancaphe.service;
 import com.josephhieu.quanlyquancaphe.dto.ThuChiNgayDTO;
 import com.josephhieu.quanlyquancaphe.dto.TongThuChiDTO;
 import com.josephhieu.quanlyquancaphe.entity.NhanVien;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFSheet; // Dùng HSSF cho định dạng .xls (Excel 97-2003)
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -16,20 +16,33 @@ import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * Lớp Service chịu trách nhiệm tạo các file Excel (định dạng .xls)
+ * cho chức năng "Xuất file" trong Báo cáo.
+ * Sử dụng thư viện Apache POI.
+ *
+ * @author Joseph Hieu (Tên của bạn)
+ * @version 1.0
+ */
 @Service
 public class ExcelExportService {
 
     /**
-     * Tạo file Excel (.xls) cho báo cáo Thu Chi
+     * Tạo file Excel (.xls) cho báo cáo Thu Chi từ dữ liệu đã tổng hợp.
+     *
+     * @param data DTO chứa danh sách Thu/Chi theo ngày và Tổng cộng.
+     * @return Một {@link ByteArrayInputStream} chứa dữ liệu của file .xls.
+     * @throws IOException Nếu có lỗi khi ghi dữ liệu vào workbook.
      */
     public ByteArrayInputStream generateThuChiExcel(TongThuChiDTO data) throws IOException {
 
+        // Định dạng ngày (ví dụ: 23/12/2014)
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        // Tạo một Workbook (.xls)
+        // Sử dụng try-with-resources để tự động đóng HSSFWorkbook và ByteArrayOutputStream
         try (HSSFWorkbook workbook = new HSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream();) {
 
-            // Tạo một Sheet
+            // Tạo một Sheet (trang tính) mới
             HSSFSheet sheet = workbook.createSheet("BaoCaoThuChi");
 
             // --- 1. Tạo hàng Tiêu đề (Header) ---
@@ -38,16 +51,16 @@ public class ExcelExportService {
             for (int col = 0; col < headers.length; col++) {
                 Cell cell = headerRow.createCell(col);
                 cell.setCellValue(headers[col]);
-                // (Thêm style nếu muốn)
+                // (Có thể thêm CellStyle ở đây để in đậm, tô màu...)
             }
 
-            // --- 2. Đổ dữ liệu ---
-            int rowIdx = 1;
+            // --- 2. Đổ dữ liệu chi tiết ---
+            int rowIdx = 1; // Bắt đầu từ hàng 1 (sau header)
             for (ThuChiNgayDTO ngay : data.getChiTietTheoNgay()) {
                 Row row = sheet.createRow(rowIdx++);
 
                 row.createCell(0).setCellValue(ngay.getNgay().format(formatter));
-                row.createCell(1).setCellValue(ngay.getTongThu().doubleValue()); // Chuyển BigDecimal thành double
+                row.createCell(1).setCellValue(ngay.getTongThu().doubleValue()); // Excel xử lý double
                 row.createCell(2).setCellValue(ngay.getTongChi().doubleValue());
             }
 
@@ -56,26 +69,31 @@ public class ExcelExportService {
             footerRow.createCell(0).setCellValue("Tổng cộng");
             footerRow.createCell(1).setCellValue(data.getTongThuCong().doubleValue());
             footerRow.createCell(2).setCellValue(data.getTongChiCong().doubleValue());
+            // (Thêm CellStyle cho dòng này để in đậm)
 
-            // Tự động điều chỉnh kích thước cột
+            // Tự động điều chỉnh kích thước cột cho vừa nội dung
             sheet.autoSizeColumn(0);
             sheet.autoSizeColumn(1);
             sheet.autoSizeColumn(2);
 
-            // Ghi workbook vào ByteArrayOutputStream
+            // Ghi toàn bộ Workbook (file Excel) vào luồng byte trong bộ nhớ
             workbook.write(out);
 
-            // Trả về file dưới dạng InputStream
+            // Trả về một InputStream từ mảng byte đã ghi
             return new ByteArrayInputStream(out.toByteArray());
         }
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Tạo file Excel (.xls) cho báo cáo Lương
+     * Tạo file Excel (.xls) cho báo cáo Lương nhân viên.
+     *
+     * @param dsNhanVien Danh sách các đối tượng NhanVien (đã join ChucVu).
+     * @param tongLuong Tổng lương của tất cả nhân viên.
+     * @return Một {@link ByteArrayInputStream} chứa dữ liệu của file .xls.
+     * @throws IOException Nếu có lỗi khi ghi dữ liệu vào workbook.
      */
     public ByteArrayInputStream generateLuongExcel(List<NhanVien> dsNhanVien, BigDecimal tongLuong) throws IOException {
 
-        // Tạo một Workbook (.xls)
         try (HSSFWorkbook workbook = new HSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream();) {
 
             HSSFSheet sheet = workbook.createSheet("BaoCaoLuong");
@@ -86,7 +104,6 @@ public class ExcelExportService {
             for (int col = 0; col < headers.length; col++) {
                 Cell cell = headerRow.createCell(col);
                 cell.setCellValue(headers[col]);
-                // (Thêm style nếu muốn)
             }
 
             // --- 2. Đổ dữ liệu ---
@@ -97,11 +114,12 @@ public class ExcelExportService {
                 row.createCell(0).setCellValue(rowIdx - 1); // STT (bắt đầu từ 1)
                 row.createCell(1).setCellValue(nv.getHoTen());
 
+                // Lấy thông tin từ ChucVu (đã được join fetch)
                 String tenChucVu = (nv.getChucVu() != null) ? nv.getChucVu().getTenChucVu() : "N/A";
                 BigDecimal luong = (nv.getChucVu() != null && nv.getChucVu().getLuong() != null) ? nv.getChucVu().getLuong() : BigDecimal.ZERO;
 
                 row.createCell(2).setCellValue(tenChucVu);
-                row.createCell(3).setCellValue(luong.doubleValue()); // Chuyển BigDecimal thành double
+                row.createCell(3).setCellValue(luong.doubleValue());
             }
 
             // --- 3. Thêm dòng Tổng cộng (Footer) ---

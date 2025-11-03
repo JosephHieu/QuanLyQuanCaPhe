@@ -12,6 +12,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+/**
+ * Controller chịu trách nhiệm xử lý các yêu cầu của Admin
+ * liên quan đến nghiệp vụ Quản lý Marketing (Khuyến mãi).
+ * Các URL đều có tiền tố /admin/marketing.
+ *
+ * @author Joseph Hieu
+ * @version 1.0
+ * @since 2025-11-03
+ */
 @Controller
 @RequestMapping("/admin/marketing")
 public class MarketingAdminController {
@@ -20,8 +29,11 @@ public class MarketingAdminController {
     private KhuyenMaiService khuyenMaiService;
 
     /**
-     * Hiển thị trang Danh sách Khuyến mãi
-     * URL: /admin/marketing
+     * Hiển thị trang danh sách các chương trình khuyến mãi.
+     * Xử lý URL: GET /admin/marketing
+     *
+     * @param model Model để truyền danh sách khuyến mãi (dsKhuyenMai) ra view.
+     * @return Tên view template "admin/marketing/list".
      */
     @GetMapping("")
     public String showKhuyenMaiList(Model model) {
@@ -36,8 +48,11 @@ public class MarketingAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Hiển thị form Thêm khuyến mãi
-     * URL: /admin/marketing/them
+     * Hiển thị form để thêm một chương trình khuyến mãi mới.
+     * Xử lý URL: GET /admin/marketing/them
+     *
+     * @param model Model để truyền đối tượng KhuyenMai rỗng ra form.
+     * @return Tên view template "admin/marketing/form".
      */
     @GetMapping("/them")
     public String showThemKhuyenMaiForm(Model model) {
@@ -50,8 +65,13 @@ public class MarketingAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý lưu khuyến mãi mới
-     * URL: /admin/marketing/save (POST)
+     * Xử lý việc lưu một khuyến mãi mới.
+     * Xử lý URL: POST /admin/marketing/save
+     *
+     * @param khuyenMai Đối tượng KhuyenMai được bind từ form (th:object).
+     * @param model Model để trả về thông báo lỗi nếu thất bại.
+     * @param redirectAttributes Dùng để gửi thông báo thành công khi chuyển hướng.
+     * @return Chuyển hướng về trang danh sách nếu thành công, ngược lại trả về form.
      */
     @PostMapping("/save")
     public String saveKhuyenMai(
@@ -83,8 +103,12 @@ public class MarketingAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Hiển thị form Sửa khuyến mãi
-     * URL: /admin/marketing/edit/{id}
+     * Hiển thị form Chỉnh sửa khuyến mãi với dữ liệu đã có.
+     * Xử lý URL: GET /admin/marketing/edit/{id}
+     *
+     * @param maKhuyenMai Mã UUID của khuyến mãi (lấy từ URL path).
+     * @param model Model để truyền đối tượng KhuyenMai tìm được ra view.
+     * @return Tên view template "admin/marketing/form" (dùng chung).
      */
     @GetMapping("/edit/{id}")
     public String showEditKhuyenMaiForm(@PathVariable("id") String maKhuyenMai, Model model) {
@@ -102,8 +126,13 @@ public class MarketingAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý CẬP NHẬT khuyến mãi
-     * URL: /admin/marketing/update (POST)
+     * Xử lý việc CẬP NHẬT (lưu) một khuyến mãi đã chỉnh sửa.
+     * Xử lý URL: POST /admin/marketing/update
+     *
+     * @param khuyenMai Đối tượng KhuyenMai được bind từ form (đã chứa maKhuyenMai).
+     * @param model Model để trả về thông báo lỗi nếu thất bại.
+     * @param redirectAttributes Dùng để gửi thông báo thành công khi chuyển hướng.
+     * @return Chuyển hướng về trang danh sách nếu thành công, ngược lại trả về form.
      */
     @PostMapping("/update")
     public String updateKhuyenMai(
@@ -133,8 +162,12 @@ public class MarketingAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý xóa khuyến mãi
-     * URL: /admin/marketing/delete/{id} (GET)
+     * Xử lý nghiệp vụ Xóa khuyến mãi.
+     * Xử lý URL: GET /admin/marketing/delete/{id}
+     *
+     * @param maKhuyenMai Mã UUID của khuyến mãi cần xóa (lấy từ URL path).
+     * @param redirectAttributes Dùng để gửi thông báo (success/error) khi chuyển hướng.
+     * @return Chuyển hướng về trang danh sách (/admin/marketing).
      */
     @GetMapping("/delete/{id}")
     public String deleteKhuyenMai(@PathVariable("id") String maKhuyenMai, RedirectAttributes redirectAttributes) {

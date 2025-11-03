@@ -25,6 +25,15 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Controller chịu trách nhiệm xử lý các yêu cầu của Admin
+ * liên quan đến nghiệp vụ Thống kê và Báo cáo.
+ * Các URL đều có tiền tố /admin.
+ *
+ * @author Joseph Hieu
+ * @version 1.0
+ * @since 2025-11-03
+ */
 @Controller
 @RequestMapping("/admin")
 public class ReportController {
@@ -38,6 +47,18 @@ public class ReportController {
     @Autowired
     private ExcelExportService excelExportService;
 
+    /**
+     * Hiển thị trang Thống kê & Báo cáo chính.
+     * Phương thức này xử lý logic để hiển thị các loại báo cáo khác nhau (Thu/Chi, Lương, v.v.)
+     * dựa trên tham số 'reportType' từ URL.
+     * Xử lý URL: GET /admin/reports
+     *
+     * @param reportType Loại báo cáo người dùng chọn (ví dụ: "Tất cả", "Lương"). Mặc định là "Tất cả".
+     * @param startDate  Ngày bắt đầu lọc (không bắt buộc).
+     * @param endDate    Ngày kết thúc lọc (không bắt buộc).
+     * @param model      Model để truyền dữ liệu báo cáo (DTO, dsNhanVien) và cờ (isLuongReport) ra view.
+     * @return Tên view template "admin/report/view".
+     */
     @GetMapping("/reports")
     public String showReportPage(
             @RequestParam(value = "reportType", required = false, defaultValue = "Tất cả") String reportType,
@@ -91,8 +112,15 @@ public class ReportController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý xuất file
-     * URL: /admin/reports/export
+     * Xử lý yêu cầu xuất file báo cáo (ví dụ: Excel).
+     * Tạo file dựa trên các bộ lọc (reportType, dates, exportFormat) và trả về cho trình duyệt.
+     * Xử lý URL: GET /admin/reports/export
+     *
+     * @param reportType   Loại báo cáo cần xuất.
+     * @param startDate    Ngày bắt đầu.
+     * @param endDate      Ngày kết thúc.
+     * @param exportFormat Định dạng file (ví dụ: "xls", "txt").
+     * @return Một {@link ResponseEntity} chứa {@link Resource} (file) để tải về.
      */
     @GetMapping("/reports/export")
     public ResponseEntity<Resource> exportReport(

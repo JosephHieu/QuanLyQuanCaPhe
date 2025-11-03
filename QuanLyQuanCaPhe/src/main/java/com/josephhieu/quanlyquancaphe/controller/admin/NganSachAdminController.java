@@ -18,6 +18,16 @@ import java.time.LocalDate; // Thêm
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controller chịu trách nhiệm xử lý các yêu cầu của Admin
+ * liên quan đến nghiệp vụ Quản lý Ngân sách.
+ * Bao gồm "Xem thu chi" (Báo cáo) và "Thêm chi tiêu" (CRUD).
+ * Các URL đều có tiền tố /admin/ngansach.
+ *
+ * @author Joseph Hieu
+ * @version 1.0
+ * @since 2025-11-03
+ */
 @Controller
 @RequestMapping("/admin/ngansach")
 public class NganSachAdminController {
@@ -26,8 +36,15 @@ public class NganSachAdminController {
     private NganSachService nganSachService;
 
     /**
-     * Hiển thị trang Xem thu chi (Quản lý ngân sách)
-     * URL: /admin/ngansach
+     * Hiển thị trang "Xem thu chi" (trang chính của Quản lý ngân sách).
+     * Tổng hợp Thu (từ Hóa đơn đã thanh toán) và Chi (từ Chi tiêu)
+     * trong một khoảng ngày.
+     * Xử lý URL: GET /admin/ngansach
+     *
+     * @param startDate Ngày bắt đầu (lấy từ URL param, không bắt buộc).
+     * @param endDate   Ngày kết thúc (lấy từ URL param, không bắt buộc).
+     * @param model     Model để truyền dữ liệu DTO tổng hợp ra view.
+     * @return Tên view template "admin/ngansach/list".
      */
     @GetMapping("")
     public String showNganSachPage(
@@ -61,8 +78,12 @@ public class NganSachAdminController {
     }
 
     /**
-     * CẬP NHẬT: Hiển thị form/bảng Thêm chi tiêu
-     * URL: /admin/ngansach/themchi
+     * Hiển thị form/bảng động "Thêm chi tiêu".
+     * Tải danh sách các khoản chi gần đây để hiển thị sẵn trong bảng.
+     * Xử lý URL: GET /admin/ngansach/themchi
+     *
+     * @param model Model để truyền danh sách chi tiêu (ChiTieuListDTO) ra view.
+     * @return Tên view template "admin/ngansach/themchi_form".
      */
     @GetMapping("/themchi")
     public String showThemChiTieuForm(Model model) {
@@ -87,8 +108,15 @@ public class NganSachAdminController {
     }
 
     /**
-     * CẬP NHẬT: Xử lý lưu nhiều khoản chi (Thêm/Sửa)
-     * URL: /admin/ngansach/themchi/save (POST)
+     * Xử lý lưu một danh sách các khoản chi tiêu (Thêm mới và Cập nhật).
+     * Nhận một DTO chứa danh sách các khoản chi từ form động.
+     * Xử lý URL: POST /admin/ngansach/themchi/save
+     *
+     * @param chiTieuListDTO     Đối tượng DTO (wrapper) được bind từ form (th:object).
+     * @param authentication     Để lấy thông tin nhân viên (tài khoản) đang thực hiện.
+     * @param redirectAttributes Dùng để gửi thông báo (success/error) khi chuyển hướng.
+     * @param model              Dùng để trả về form nếu có lỗi.
+     * @return Chuyển hướng về trang "Xem thu chi" nếu thành công, ngược lại trả về form.
      */
     @PostMapping("/themchi/save")
     public String saveChiTieu(

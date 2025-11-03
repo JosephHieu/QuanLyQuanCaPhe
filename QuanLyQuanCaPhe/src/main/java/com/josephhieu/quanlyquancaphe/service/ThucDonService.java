@@ -21,6 +21,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Lớp Service (Nghiệp vụ) cho các chức năng liên quan đến Thực đơn ({@link ThucDon}).
+ * Bao gồm logic CRUD cho Món ăn và quản lý Công thức ({@link ChiTietThucDon}).
+ *
+ * @author Joseph Hieu (Tên của bạn)
+ * @version 1.0
+ */
 @Service
 public class ThucDonService {
 
@@ -41,7 +48,11 @@ public class ThucDonService {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Thêm món ăn mới và thành phần
+     * Tạo một món ăn mới (ThucDon) và các thành phần (ChiTietThucDon) của nó.
+     *
+     * @param dto DTO từ form chứa thông tin món và danh sách thành phần.
+     * @return Đối tượng ThucDon đã được lưu.
+     * @throws NotFoundException Nếu một `maHangHoa` trong thành phần không hợp lệ.
      */
     @Transactional
     public ThucDon createThucDon(ThucDonFormDTO dto) {
@@ -95,7 +106,11 @@ public class ThucDonService {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Tìm kiếm món ăn
+     * Tìm kiếm món ăn theo Tên (keyword).
+     * Nếu keyword rỗng, trả về tất cả.
+     *
+     * @param keyword Từ khóa tìm kiếm.
+     * @return Danh sách {@link ThucDon} khớp.
      */
     public List<ThucDon> searchThucDon(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
@@ -106,7 +121,13 @@ public class ThucDonService {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xóa món ăn
+     * Xóa một món ăn (ThucDon).
+     * Sẽ kiểm tra xem món ăn này đã từng được bán (có trong ChiTietHoaDon) chưa.
+     * Nếu chưa, sẽ xóa các thành phần (ChiTietThucDon) trước, rồi xóa ThucDon.
+     *
+     * @param maThucDon Mã (UUID) của món ăn cần xóa.
+     * @throws NotFoundException Nếu không tìm thấy món ăn.
+     * @throws DataIntegrityViolationException Nếu món ăn đã có trong lịch sử bán hàng.
      */
     @Transactional
     public void deleteThucDon(String maThucDon) throws NotFoundException, DataIntegrityViolationException {
@@ -130,7 +151,12 @@ public class ThucDonService {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Cập nhật món ăn
+     * Cập nhật một món ăn (ThucDon) và các thành phần (ChiTietThucDon).
+     * Logic: Cập nhật ThucDon, Xóa TẤT CẢ thành phần cũ, Thêm TẤT CẢ thành phần mới.
+     *
+     * @param dto DTO từ form (chứa maThucDon và thông tin mới).
+     * @return Đối tượng ThucDon đã được cập nhật.
+     * @throws NotFoundException Nếu `maThucDon` hoặc `maHangHoa` không hợp lệ.
      */
     @Transactional
     public ThucDon updateThucDon(ThucDonFormDTO dto) throws NotFoundException {

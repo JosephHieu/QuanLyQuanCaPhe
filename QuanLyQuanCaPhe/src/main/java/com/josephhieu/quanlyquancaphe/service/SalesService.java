@@ -20,6 +20,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.function.Function;
 
+/**
+ * Lớp Service (Nghiệp vụ) trung tâm, chịu trách nhiệm xử lý
+ * tất cả các nghiệp vụ phức tạp của trang "Quản lý Bán hàng".
+ * Bao gồm: Xem chi tiết bàn, Chuyển bàn, Gộp bàn, Tách bàn,
+ * Đặt bàn, Hủy bàn, Thêm/Sửa món, và Thanh toán.
+ *
+ * @author Joseph Hieu (Tên của bạn)
+ * @version 1.0
+ */
 @Service
 public class SalesService {
 
@@ -42,7 +51,13 @@ public class SalesService {
     private ThucDonRepository thucDonRepository;
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý thanh toán
+     * Xử lý nghiệp vụ thanh toán cho một bàn.
+     * Đánh dấu Hóa đơn là đã thanh toán, và tùy chọn reset Bàn về "Trống".
+     *
+     * @param maBan Mã (UUID) của bàn cần thanh toán.
+     * @param resetTable True nếu muốn set Bàn về "Trống", False nếu giữ nguyên trạng thái.
+     * @throws NotFoundException Nếu không tìm thấy Bàn.
+     * @throws RuntimeException Nếu không tìm thấy Hóa đơn/Đặt bàn đang hoạt động.
      */
     @Transactional
     public void processPayment(String maBan, boolean resetTable) {
@@ -193,7 +208,12 @@ public class SalesService {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý đặt bàn
+     * Xử lý nghiệp vụ đặt bàn.
+     * Tạo một Hóa đơn mới (0đ), một ChiTietDatBan, và set trạng thái Bàn là "Đặt trước".
+     *
+     * @param request DTO chứa thông tin đặt bàn (maBan, tenKhachHang, ngayGioDat...).
+     * @throws NotFoundException Nếu không tìm thấy Bàn.
+     * @throws IllegalArgumentException Nếu bàn không trống hoặc thiếu thông tin.
      */
     @Transactional
     public void reserveTable(ReserveTableRequestDTO request) {
@@ -255,7 +275,12 @@ public class SalesService {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý hủy bàn/đơn hàng
+     * Xử lý nghiệp vụ Hủy bàn/Hủy đơn hàng.
+     * Xóa ChiTietHoaDon, ChiTietDatBan, HoaDon và set Bàn về "Trống".
+     *
+     * @param maBan Mã (UUID) của bàn cần hủy.
+     * @throws NotFoundException Nếu không tìm thấy Bàn.
+     * @throws RuntimeException Nếu không tìm thấy Hóa đơn/Đặt bàn đang hoạt động.
      */
     @Transactional
     public void cancelOrder(String maBan) {
@@ -297,7 +322,13 @@ public class SalesService {
 
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý tách bàn
+     * Xử lý nghiệp vụ Tách bàn.
+     * Chuyển một số món (với số lượng cụ thể) từ Bàn nguồn sang Bàn đích (trống).
+     *
+     * @param sourceTableId Mã bàn nguồn (có khách).
+     * @param destinationTableId Mã bàn đích (trống).
+     * @param itemsToMove Danh sách món và số lượng cần tách.
+     * @throws NotFoundException, IllegalArgumentException, RuntimeException
      */
     @Transactional
     public void splitTable(String sourceTableId, String destinationTableId, List<SplitTableRequestDTO.SplitItemDTO> itemsToMove) {
@@ -429,6 +460,14 @@ public class SalesService {
         System.out.println("Đã tách thành công từ bàn " + sourceTable.getTenBan() + " sang bàn " + destinationTable.getTenBan());
     }
 
+    /**
+     * Xử lý nghiệp vụ Gộp bàn.
+     * Gộp tất cả món từ các Bàn nguồn vào Bàn đích.
+     *
+     * @param sourceTableIds Danh sách Mã bàn nguồn (có thể bao gồm cả bàn đích).
+     * @param destinationTableId Mã bàn đích (trống hoặc có khách).
+     * @throws NotFoundException, IllegalArgumentException, RuntimeException
+     */
     @Transactional
     public void mergeTables(List<String> sourceTableIds, String destinationTableId) {
         // 1. Validation cơ bản
@@ -589,6 +628,14 @@ public class SalesService {
         System.out.println("Đã gộp thành công vào bàn " + destinationTable.getTenBan());
     }
 
+    /**
+     * Xử lý nghiệp vụ Chuyển bàn.
+     * Chuyển toàn bộ hóa đơn (ChiTietDatBan) từ Bàn nguồn sang Bàn đích.
+     *
+     * @param sourceTableId Mã bàn nguồn (có khách/đặt trước).
+     * @param destinationTableId Mã bàn đích (trống).
+     * @throws NotFoundException, IllegalArgumentException, RuntimeException
+     */
     @Transactional
     public void moveTable(String sourceTableId, String destinationTableId) {
         // 1. Kiểm tra bàn nguồn
@@ -647,6 +694,13 @@ public class SalesService {
         System.out.println("Đã chuyển thành công từ bàn " + sourceTable.getTenBan() + " sang bàn " + destinationTable.getTenBan());
     }
 
+    /**
+     * Lấy thông tin chi tiết của một bàn (món đã gọi, thông tin đặt trước).
+     *
+     * @param maBan Mã (UUID) của bàn.
+     * @return {@link TableDetailsDTO} chứa thông tin chi tiết.
+     * @throws NotFoundException Nếu không tìm thấy Bàn.
+     */
     @Transactional(readOnly = true)
     public TableDetailsDTO getTableDetails(String maBan) {
         Ban ban = banRepository.findById(maBan)

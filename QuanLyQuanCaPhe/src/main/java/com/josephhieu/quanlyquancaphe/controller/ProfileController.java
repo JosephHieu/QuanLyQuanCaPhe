@@ -15,12 +15,31 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * Controller chịu trách nhiệm xử lý các yêu cầu liên quan đến
+ * trang "Trang cá nhân" (Profile) của người dùng đã đăng nhập.
+ * Bao gồm xem, sửa thông tin cá nhân và cập nhật ảnh đại diện.
+ *
+ * @author Joseph Hieu
+ * @version 1.0
+ * @since 2025-11-03
+ */
 @Controller
 public class ProfileController {
 
     @Autowired
     private NhanVienService nhanVienService;
 
+    /**
+     * Hiển thị trang "Trang cá nhân" (chỉ xem).
+     * Lấy thông tin của người dùng đang đăng nhập và gửi ra view.
+     * Xử lý URL: GET /profile
+     *
+     * @param model Model để truyền đối tượng NhanVien ra view.
+     * @param authentication Đối tượng Authentication (từ Spring Security)
+     * chứa thông tin của người dùng đang đăng nhập.
+     * @return Tên view template "profile/view".
+     */
     @GetMapping("/profile")
     public String showProfilePage(Model model, Authentication authentication) {
 
@@ -35,6 +54,15 @@ public class ProfileController {
         return "profile/view";
     }
 
+    /**
+     * Endpoint API để tải và hiển thị ảnh đại diện (avatar) của người dùng.
+     * Được gọi bởi thẻ <img> trong các file HTML (ví dụ: src="/profile/image").
+     * Xử lý URL: GET /profile/image
+     *
+     * @param authentication Đối tượng Authentication để xác định người dùng.
+     * @param response       Đối tượng HttpServletResponse để ghi dữ liệu ảnh (byte) trực tiếp vào.
+     * @throws IOException Nếu có lỗi khi ghi dữ liệu ảnh.
+     */
     @GetMapping("/profile/image")
     @ResponseBody // Báo Spring trả về dữ liệu thô (ảnh), không phải tên file HTML
     public void getUserProfileImage(Authentication authentication, HttpServletResponse response) throws IOException {
@@ -62,7 +90,14 @@ public class ProfileController {
         }
     }
 
-    // 2. Phương thức MỚI: Hiển thị form CHỈNH SỬA
+    /**
+     * Hiển thị form Chỉnh sửa trang cá nhân (với dữ liệu cũ).
+     * Xử lý URL: GET /profile/edit
+     *
+     * @param model Model để truyền đối tượng NhanVien (chứa dữ liệu cũ) ra view.
+     * @param authentication Đối tượng Authentication để lấy thông tin người dùng.
+     * @return Tên view template "profile/edit".
+     */
     @GetMapping("/profile/edit")
     public String showEditProfileForm(Model model, Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -76,7 +111,18 @@ public class ProfileController {
         return "profile/edit";
     }
 
-    // 3. Phương thức MỚI: Xử lý CẬP NHẬT (Lưu)
+    /**
+     * Xử lý việc Cập nhật (Lưu) thông tin cá nhân.
+     * Nhận dữ liệu từ form (Họ tên, Địa chỉ, SĐT) và file ảnh mới.
+     * Xử lý URL: POST /profile/update
+     *
+     * @param nhanVienFromForm Đối tượng NhanVien được bind từ form (chỉ chứa các trường được phép sửa).
+     * @param anhFile          File ảnh đại diện mới (MultipartFile).
+     * @param authentication   Để xác định đúng người dùng đang cập nhật.
+     * @param model            Dùng để trả về thông báo lỗi nếu thất bại.
+     * @return Chuyển hướng về trang xem profile (/profile) nếu thành công,
+     * ngược lại trả về form edit.
+     */
     @PostMapping("/profile/update")
     public String updateProfile(
             @ModelAttribute("nhanVien") NhanVien nhanVienFromForm, // Nhận data từ form (HoTen, DiaChi, SoDienThoai)

@@ -17,6 +17,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Controller chịu trách nhiệm xử lý các yêu cầu của Admin
+ * liên quan đến nghiệp vụ Quản lý Nhân viên (CRUD).
+ *
+ * @author Joseph Hieu
+ * @version 1.0
+ * @since 2025-11-03
+ */
 @Controller
 public class NhanVienAdminController {
 
@@ -26,6 +34,17 @@ public class NhanVienAdminController {
     @Autowired
     private ChucVuService chucVuService;
 
+    /**
+     * Xử lý việc lưu một nhân viên mới (tạo TaiKhoan và NhanVien).
+     *
+     * @param nhanVien      Đối tượng NhanVien được bind từ form (chỉ chứa HoTen, DiaChi...).
+     * @param tenDangNhap   Tên đăng nhập (từ input riêng).
+     * @param matKhau       Mật khẩu mới (từ input riêng, sẽ được mã hóa ở Service).
+     * @param maChucVu      Mã UUID của ChucVu được chọn.
+     * @param anhFile       File ảnh đại diện được tải lên.
+     * @param model         Model để trả về thông báo lỗi nếu thất bại.
+     * @return Chuyển hướng về trang danh sách nếu thành công, ngược lại trả về form.
+     */
     @PostMapping("/admin/nhanvien/save")
     public String saveNhanVien(
             @ModelAttribute("nhanVien") NhanVien nhanVien,
@@ -105,6 +124,13 @@ public class NhanVienAdminController {
         return "redirect:/admin/nhanvien";
     }
 
+    /**
+     * Hiển thị form để thêm một nhân viên mới.
+     * Gửi một đối tượng NhanVien rỗng và danh sách ChucVu ra view.
+     *
+     * @param model Model để truyền đối tượng rỗng (nhanVien) và dsChucVu.
+     * @return Tên của file view (template) "admin/nhanvien/form".
+     */
     @GetMapping("/admin/nhanvien/them")
     public String showThemNhanVienForm(Model model) {
 
@@ -121,6 +147,12 @@ public class NhanVienAdminController {
         return "admin/nhanvien/form";
     }
 
+    /**
+     * Hiển thị trang danh sách tất cả nhân viên.
+     *
+     * @param model Model để truyền dữ liệu (dsNhanVien) ra view.
+     * @return Tên của file view (template) "admin/nhanvien/list".
+     */
     @GetMapping("/admin/nhanvien")
     public String showNhanVienList(Model model) {
 

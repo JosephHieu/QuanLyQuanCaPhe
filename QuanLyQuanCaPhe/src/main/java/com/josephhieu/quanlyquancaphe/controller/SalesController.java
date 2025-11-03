@@ -15,6 +15,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller chịu trách nhiệm xử lý các yêu cầu cho trang "Quản lý Bán hàng" (POS).
+ * Bao gồm việc hiển thị lưới bàn và xử lý tất cả các nghiệp vụ
+ * liên quan đến order, bàn (chuyển, gộp, tách, thanh toán, v.v.)
+ * thông qua các API endpoint (trả về JSON).
+ *
+ * @author Joseph Hieu (Tên của bạn)
+ * @version 1.0
+ * @since 2025-11-03
+ */
 @Controller
 public class SalesController {
 
@@ -27,6 +37,13 @@ public class SalesController {
     @Autowired
     private ThucDonService thucDonService;
 
+    /**
+     * Hiển thị trang Quản lý Bán hàng chính (lưới bàn).
+     * Xử lý URL: GET /sales
+     *
+     * @param model Model để truyền danh sách bàn (dsBan) ra view.
+     * @return Tên view template "sales/view".
+     */
     @GetMapping("/sales")
     public String showSalesPage(Model model) {
 
@@ -39,7 +56,15 @@ public class SalesController {
         return "sales/view";
     }
 
-    // Lấy thông tin chi tiết một bàn
+    /**
+     * API: Lấy thông tin chi tiết của một bàn (món đã gọi, thông tin đặt trước).
+     * Được gọi bằng JavaScript (fetch) khi nhấn nút "Xem bàn".
+     * Xử lý URL: GET /sales/table/{maBan}
+     *
+     * @param maBan Mã UUID của bàn cần xem.
+     * @return ResponseEntity chứa {@link TableDetailsDTO} (dạng JSON) nếu thành công (200 OK),
+     * hoặc 404 Not Found, hoặc 500 Internal Server Error.
+     */
     @GetMapping("/sales/table/{maBan}")
     @ResponseBody // Trả về JSON, không phải tên view
     public ResponseEntity<TableDetailsDTO> getTableDetails(@PathVariable String maBan) {
@@ -56,8 +81,11 @@ public class SalesController {
     }
 
     /**
-     * Endpoint xử lý yêu cầu chuyển bàn
-     * URL: /sales/move-table (POST)
+     * API: Xử lý nghiệp vụ chuyển toàn bộ hóa đơn từ bàn nguồn sang bàn đích.
+     * Xử lý URL: POST /sales/move-table
+     *
+     * @param request DTO chứa sourceTableId và destinationTableId.
+     * @return ResponseEntity 200 OK nếu thành công, 400 Bad Request nếu lỗi logic.
      */
     @PostMapping("/sales/move-table") // *** ĐẢM BẢO DÒNG NÀY ĐÚNG ***
     @ResponseBody // Trả về JSON/text
@@ -74,8 +102,11 @@ public class SalesController {
     }
 
     /**
-     * Endpoint MỚI: Xử lý yêu cầu gộp bàn
-     * URL: /sales/merge-tables (POST)
+     * API: Xử lý nghiệp vụ gộp nhiều hóa đơn từ các bàn nguồn vào một bàn đích.
+     * Xử lý URL: POST /sales/merge-tables
+     *
+     * @param request DTO chứa danh sách sourceTableIds và destinationTableId.
+     * @return ResponseEntity 200 OK nếu thành công, 400 Bad Request nếu lỗi logic.
      */
     @PostMapping("/sales/merge-tables")
     @ResponseBody
@@ -95,8 +126,11 @@ public class SalesController {
     }
 
     /**
-     * Endpoint MỚI: Xử lý yêu cầu tách bàn
-     * URL: /sales/split-table (POST)
+     * API: Xử lý nghiệp vụ tách một số món từ bàn nguồn sang bàn đích (bàn trống).
+     * Xử lý URL: POST /sales/split-table
+     *
+     * @param request DTO chứa sourceTableId, destinationTableId, và danh sách món (items) cần tách.
+     * @return ResponseEntity 200 OK nếu thành công, 400 Bad Request nếu lỗi logic.
      */
     @PostMapping("/sales/split-table")
     @ResponseBody
@@ -116,8 +150,11 @@ public class SalesController {
     }
 
     /**
-     * Endpoint MỚI: Xử lý yêu cầu hủy bàn
-     * URL: /sales/cancel-order (POST)
+     * API: Xử lý nghiệp vụ hủy bàn (xóa hóa đơn, chi tiết, đặt bàn và set bàn về "Trống").
+     * Xử lý URL: POST /sales/cancel-order
+     *
+     * @param request DTO chứa maBan cần hủy.
+     * @return ResponseEntity 200 OK nếu thành công, 400 Bad Request nếu lỗi logic.
      */
     @PostMapping("/sales/cancel-order")
     @ResponseBody
@@ -138,8 +175,11 @@ public class SalesController {
     }
 
     /**
-     * Endpoint MỚI: Xử lý yêu cầu đặt bàn
-     * URL: /sales/reserve-table (POST)
+     * API: Xử lý nghiệp vụ đặt bàn (tạo Hóa đơn 0đ, tạo ChiTietDatBan, set bàn "Đặt trước").
+     * Xử lý URL: POST /sales/reserve-table
+     *
+     * @param request DTO chứa thông tin đặt bàn (maBan, tenKhachHang, ngayGioDat...).
+     * @return ResponseEntity 200 OK nếu thành công, 400 Bad Request nếu lỗi logic.
      */
     @PostMapping("/sales/reserve-table")
     @ResponseBody
@@ -159,8 +199,12 @@ public class SalesController {
     }
 
     /**
-     * Endpoint MỚI: Xử lý cập nhật đơn hàng cho bàn
-     * URL: /sales/update-order (POST)
+     * API: Xử lý Thêm/Sửa/Xóa món ăn cho một hóa đơn đang hoạt động.
+     * Được gọi từ modal "Chọn thực đơn".
+     * Xử lý URL: POST /sales/update-order
+     *
+     * @param request DTO chứa maBan và danh sách món ăn (items) mới.
+     * @return ResponseEntity 200 OK nếu thành công, 400 Bad Request nếu lỗi logic.
      */
     @PostMapping("/sales/update-order")
     @ResponseBody
@@ -180,8 +224,11 @@ public class SalesController {
     }
 
     /**
-     * Endpoint MỚI: Cung cấp danh sách món ăn (Thực đơn)
-     * URL: /menu (GET)
+     * API: Cung cấp toàn bộ danh sách thực đơn (đã sắp xếp).
+     * Được gọi bởi JavaScript khi tải trang Bán hàng để chuẩn bị cho modal "Chọn thực đơn".
+     * Xử lý URL: GET /menu
+     *
+     * @return ResponseEntity chứa List<ThucDon> (dạng JSON).
      */
     @GetMapping("/menu")
     @ResponseBody // Trả về JSON
@@ -197,8 +244,11 @@ public class SalesController {
     }
 
     /**
-     * Endpoint MỚI: Xử lý yêu cầu thanh toán
-     * URL: /sales/process-payment (POST)
+     * API: Xử lý nghiệp vụ thanh toán (đánh dấu HoaDon.TrangThai = true, cập nhật Ban.TinhTrang).
+     * Xử lý URL: POST /sales/process-payment
+     *
+     * @param request DTO chứa maBan và cờ resetTable.
+     * @return ResponseEntity 200 OK nếu thành công, 400 Bad Request nếu lỗi logic.
      */
     @PostMapping("/sales/process-payment")
     @ResponseBody
@@ -228,14 +278,4 @@ public class SalesController {
             return ResponseEntity.internalServerError().body("Lỗi hệ thống khi thanh toán."); // Trả về 500
         }
     }
-
-    // (Optional: Endpoint để in hóa đơn)
-     /*
-     @GetMapping("/sales/bill/{maBan}/print")
-     public String printBillPage(@PathVariable String maBan, Model model) {
-         // Lấy thông tin hóa đơn đã thanh toán (hoặc chưa) của bàn
-         // Trả về một trang HTML được thiết kế để in
-         return "sales/bill_print";
-     }
-     */
 }

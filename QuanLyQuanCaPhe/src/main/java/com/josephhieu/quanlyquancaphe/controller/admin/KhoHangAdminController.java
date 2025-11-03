@@ -17,6 +17,15 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Controller chịu trách nhiệm xử lý các yêu cầu của Admin
+ * liên quan đến nghiệp vụ Quản lý Kho hàng (Tồn kho, Nhập, Xuất, Sửa, Xóa).
+ * Tất cả các URL trong controller này đều có tiền tố /admin.
+ *
+ * @author Joseph Hieu
+ * @version 1.0
+ * @since 2025-11-03
+ */
 @Controller
 @RequestMapping("/admin")
 public class KhoHangAdminController {
@@ -28,8 +37,10 @@ public class KhoHangAdminController {
     private DonViTinhService donViTinhService;
 
     /**
-     * Hiển thị trang Danh sách Hàng hóa (Tồn kho)
-     * URL: /admin/khohang
+     * Hiển thị trang chính của Quản lý kho hàng (Danh sách tồn kho).
+     *
+     * @param model Model để truyền danh sách hàng hóa (dsHangHoa) ra view.
+     * @return Tên view template "admin/khohang/list".
      */
     @GetMapping("/khohang")
     public String showHangHoaList(Model model) {
@@ -47,8 +58,10 @@ public class KhoHangAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Hiển thị form Nhập hàng hóa
-     * URL: /admin/khohang/nhap
+     * Hiển thị form để nhập một mặt hàng mới vào kho.
+     *
+     * @param model Model để truyền danh sách đơn vị tính (dsDonViTinh) và ngày mặc định.
+     * @return Tên view template "admin/khohang/nhap_form".
      */
     @GetMapping("/khohang/nhap")
     public String showNhapHangHoaForm(Model model) {
@@ -66,8 +79,19 @@ public class KhoHangAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý lưu Nhập hàng hóa
-     * URL: /admin/khohang/nhap/save (POST)
+     * Xử lý nghiệp vụ Nhập hàng hóa.
+     * Dữ liệu được nhận dưới dạng các @RequestParam riêng lẻ.
+     * Sẽ tạo mới HangHoa nếu chưa tồn tại, hoặc cập nhật số lượng nếu đã tồn tại.
+     *
+     * @param tenHangHoa Tên hàng hóa từ form.
+     * @param soLuong Số lượng nhập.
+     * @param maDonViTinh Mã UUID của đơn vị tính.
+     * @param donGia Đơn giá nhập.
+     * @param ngayNhap Ngày nhập hàng.
+     * @param authentication Để lấy thông tin nhân viên đang thực hiện.
+     * @param redirectAttributes Dùng để gửi thông báo (success/error) khi chuyển hướng.
+     * @param model Dùng để gửi lại dữ liệu ra form nếu có lỗi validation.
+     * @return Chuyển hướng về trang danh sách kho nếu thành công, ngược lại trả về form nhập hàng.
      */
     @PostMapping("/khohang/nhap/save")
     public String saveNhapHangHoa(
@@ -128,8 +152,10 @@ public class KhoHangAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Hiển thị form Xuất hàng hóa
-     * URL: /admin/khohang/xuat
+     * Hiển thị form để xuất hàng hóa khỏi kho.
+     *
+     * @param model Model để truyền danh sách hàng hóa đang có tồn kho (dsHangHoa).
+     * @return Tên view template "admin/khohang/xuat_form".
      */
     @GetMapping("/khohang/xuat")
     public String showXuatHangHoaForm(Model model) {
@@ -148,8 +174,16 @@ public class KhoHangAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý lưu Xuất hàng hóa
-     * URL: /admin/khohang/xuat/save (POST)
+     * Xử lý nghiệp vụ Xuất hàng hóa.
+     * Trừ lùi số lượng tồn kho và ghi lại vào DonXuat.
+     *
+     * @param maHangHoa Mã UUID của hàng hóa cần xuất.
+     * @param soLuong Số lượng xuất.
+     * @param ngayXuat Ngày xuất.
+     * @param authentication Để lấy thông tin nhân viên đang thực hiện.
+     * @param redirectAttributes Dùng để gửi thông báo khi chuyển hướng.
+     * @param model Dùng để trả về form nếu có lỗi.
+     * @return Chuyển hướng về trang danh sách kho nếu thành công, ngược lại trả về form xuất hàng.
      */
     @PostMapping("/khohang/xuat/save")
     public String saveXuatHangHoa(
@@ -200,12 +234,11 @@ public class KhoHangAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Hiển thị form Chỉnh sửa hàng hóa
-     * URL: /admin/khohang/edit/{id}
-     */
-    /**
-     * Hiển thị form Chỉnh sửa hàng hóa
-     * URL: /admin/khohang/edit/{id}
+     * Hiển thị form Chỉnh sửa thông tin một Hàng hóa.
+     *
+     * @param maHangHoa Mã UUID của hàng hóa (lấy từ URL path).
+     * @param model Model để truyền đối tượng hangHoa và dsDonViTinh ra view.
+     * @return Tên view template "admin/khohang/form" (dùng chung).
      */
     @GetMapping("/khohang/edit/{id}")
     public String showEditHangHoaForm(@PathVariable("id") String maHangHoa, Model model) {
@@ -228,8 +261,13 @@ public class KhoHangAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý CẬP NHẬT hàng hóa
-     * URL: /admin/khohang/update (POST)
+     * Xử lý Cập nhật thông tin Hàng hóa (Tên, Đơn giá, Số lượng, Đơn vị).
+     *
+     * @param hangHoaFromForm Đối tượng HangHoa được bind từ form (chứa ID và các trường đã sửa).
+     * @param maDonViTinh Mã UUID của đơn vị tính được chọn.
+     * @param redirectAttributes Dùng để gửi thông báo khi chuyển hướng.
+     * @param model Dùng để trả về form nếu có lỗi.
+     * @return Chuyển hướng về trang danh sách kho nếu thành công, ngược lại trả về form sửa.
      */
     @PostMapping("/khohang/update")
     public String updateHangHoa(
@@ -271,8 +309,11 @@ public class KhoHangAdminController {
     }
 
     /**
-     * HIỂN THỊ TRANG TÌM KIẾM & XỬ LÝ TÌM KIẾM
-     * URL: /admin/khohang/timkiem
+     * Hiển thị trang Tìm kiếm và xử lý kết quả tìm kiếm hàng hóa.
+     *
+     * @param keyword Từ khóa tìm kiếm (lấy từ URL param, không bắt buộc).
+     * @param model Model để truyền kết quả (dsKetQua) và từ khóa (keyword) ra view.
+     * @return Tên view template "admin/khohang/search".
      */
     @GetMapping("/khohang/timkiem")
     public String showHangHoaSearchPage(
@@ -295,8 +336,11 @@ public class KhoHangAdminController {
     }
 
     /**
-     * PHƯƠNG THỨC MỚI: Xử lý xóa hàng hóa
-     * URL: /admin/khohang/delete/{id}
+     * Xử lý nghiệp vụ Xóa hàng hóa.
+     *
+     * @param maHangHoa Mã UUID của hàng hóa cần xóa (lấy từ URL path).
+     * @param redirectAttributes Dùng để gửi thông báo (success/error) khi chuyển hướng.
+     * @return Chuyển hướng về trang danh sách kho (/admin/khohang).
      */
     @GetMapping("/khohang/delete/{id}")
     public String deleteHangHoa(@PathVariable("id") String maHangHoa, RedirectAttributes redirectAttributes) {
