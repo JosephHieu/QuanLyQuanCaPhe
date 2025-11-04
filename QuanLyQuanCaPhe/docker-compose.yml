@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     image: nguyenhoanghieu1510/cafe-app:latest
@@ -7,10 +5,10 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - spring.datasource.url=jdbc:mysql://db:3306/CafeManagement
+      - spring.datasource.url=jdbc:mysql://db:3306/CafeManagement?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
       - spring.datasource.username=root
       - spring.datasource.password=hieudeptrai
-      - spring.jpa.hibernate.ddl-auto=update
+      - spring.jpa.hibernate.ddl-auto=validate
     depends_on:
       - db
     restart: on-failure
@@ -23,8 +21,11 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=hieudeptrai
       - MYSQL_DATABASE=CafeManagement
+      # THÊM 2 DÒNG NÀY: Buộc MySQL dùng UTF-8
+      - MYSQL_CHARACTER_SET_SERVER=utf8mb4
+      - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
     volumes:
       - db-data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Chạy script khi khởi tạo
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 volumes:
   db-data:
