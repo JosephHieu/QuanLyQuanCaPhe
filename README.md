@@ -5,8 +5,6 @@
 ### Đây là một dự án web full-stack mô phỏng Hệ thống Quản lý Quán Cà Phê (POS) hoàn chỉnh, được xây dựng từ đầu bằng Spring Boot và Thymeleaf.
 ### Ứng dụng bao gồm các chức năng nghiệp vụ phức tạp từ quản lý nhân viên, kiểm soát kho hàng, quản lý thực đơn (bao gồm định lượng nguyên liệu), đến một giao diện bán hàng trực quan (xem, chuyển, gộp, tách bàn) và hệ thống báo cáo tài chính.
 
-#### `Lệnh chạy Docker:` docker-compose up -d
-
 ## `🚀 Tính năng nổi bật`
 ### Dự án này thể hiện khả năng xử lý các nghiệp vụ phức tạp và bảo mật ở cả backend và frontend:
 ## `1. Hệ thống Xác thực & Phân quyền (Spring Security)`
@@ -45,6 +43,24 @@
 ### Database,MySQL
 ### Build/Dependency,Maven
 ### Libraries,"Lombok, Apache POI (Xuất Excel)"
+
+## `Hướng dẫn chạy với Docker (Docker Setup)`
+### 1. Tải file
+### Bạn có thể chạy toàn bộ dự án (Backend + CSDL) chỉ bằng một lệnh duy nhất với Docker.
+### Yêu cầu: Đã cài đặt `Docker Desktop` (phiên bản cho Windows, Mac, hoặc Linux).
+### Hướng dẫn chạy: Tải file `docker-compose.yml` và file `init.sql` từ repo này về. Đặt cả hai file vào chung một thư mục trống (ví dụ: D:\CafeApp)
+### 2. Mở Terminal (Command Prompt hoặc PowerShell)
+### Di chuyền đến thư mục bạn vừa tạo `cd D:\CafeApp`
+### 3. Khởi động
+### Chạy lệnh sau để tải images (ảnh) và khởi động các container (ứng dụng + CSDL). Docker sẽ tự động nạp file `init.sql` để tạo dữ liệu mẫu.
+### `docker-compose up -d`
+### 4. Truy cập ứng dụng
+### Đợi khoảng 1-2 phút để ứng dụng khởi động hoàn toàn.
+### Mở trình duyệt và truy cập: `http://localhost:8080`
+### 5. Đăng nhập
+### Admin: `admin / 123456`
+### Staff: `phucvu01 / 123456`
+
 
 ## `🔧 Cài đặt & Chạy dự án (Local Setup)`
 ### Yêu cầu: Java (JDK 17+), Maven 3.x+, MySQL 8.x+
