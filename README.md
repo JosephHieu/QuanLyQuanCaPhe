@@ -1,9 +1,11 @@
 # Phần mềm Quản lý Quán Cà Phê (Cafe Management System)
 
 ## `Giới thiệu`
-#### `Link Demo:` https://drive.google.com/file/d/1YczOXhhaDIZhhtZ748y9zsBXf1OC3fxv/view?usp=sharing
+#### `Link Demo:` https://drive.google.com/file/d/1hqICk4utgtWYR5lZ6V7nbMjN7afOTYZn/view?usp=sharing
 ### Đây là một dự án web full-stack mô phỏng Hệ thống Quản lý Quán Cà Phê (POS) hoàn chỉnh, được xây dựng từ đầu bằng Spring Boot và Thymeleaf.
 ### Ứng dụng bao gồm các chức năng nghiệp vụ phức tạp từ quản lý nhân viên, kiểm soát kho hàng, quản lý thực đơn (bao gồm định lượng nguyên liệu), đến một giao diện bán hàng trực quan (xem, chuyển, gộp, tách bàn) và hệ thống báo cáo tài chính.
+
+#### `Lệnh chạy Docker:` docker-compose up -d
 
 ## `🚀 Tính năng nổi bật`
 ### Dự án này thể hiện khả năng xử lý các nghiệp vụ phức tạp và bảo mật ở cả backend và frontend:
