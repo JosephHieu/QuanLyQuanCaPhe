@@ -81,6 +81,25 @@
                 }
             });
         });
+
+        /**
+         * Xử lý logic cho nút Hamburger Menu (Mobile)
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburgerButton = document.getElementById('hamburgerMenu');
+            const sidebar = document.querySelector('.sidebar-wrapper');
+
+            if (hamburgerButton && sidebar) {
+                hamburgerButton.addEventListener('click', function() {
+
+                    event.stopPropagation(); // Ngăn sự kiện click lan ra window
+                    // Thêm/Xóa class 'is-open' để hiển thị/ẩn sidebar
+                    sidebar.classList.toggle('is-open');
+                });
+            }
+
+            // (Tùy chọn: Thêm 1 lớp nền mờ (overlay) để đóng sidebar khi click ra ngoài)
+        });
     </script>
 </div>
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Quản lý Nhân viên</title>
-
+    <th:block th:insert="~{fragments/header :: header-tags}"></th:block>
     <link rel="stylesheet" th:href="@{/css/layout.css}" />
     <link rel="stylesheet" th:href="@{/css/employee.css}" />
 
@@ -11,9 +11,7 @@
 </head>
 <body>
 
-<div class="header-bar">
-    Phần mềm quản lý quán cà phê ver 1.0
-</div>
+<div th:insert="~{fragments/header :: header-bar}"></div>
 
 <div class="page-container">
 

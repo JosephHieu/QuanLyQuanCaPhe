@@ -4,6 +4,11 @@ body {
     display: flex; flex-direction: column; height: 100vh;
     background-color: #f0f0f0;
 }
+
+.hamburger-menu {
+    display: none; /* Ẩn nút hamburger trên Desktop */
+}
+
 /* === Header (Thanh trên cùng) === */
 .header-bar {
     padding: 10px 15px; font-weight: bold;
@@ -141,3 +146,110 @@ body {
     cursor: pointer;
 }
 .logout-button img { margin-right: 8px; width: 20px; height: 20px; }
+
+
+/*
+==============================================
+ MEDIA QUERIES (CSS RESPONSIVE)
+==============================================
+*/
+/* Áp dụng khi màn hình từ 768px trở xuống */
+@media (max-width: 768px) {
+
+    /* --- 1. Xử lý Layout chính --- */
+
+    .page-container {
+        display: block; /* Chuyển về block */
+        flex: 1; /* Giữ lại flex: 1 để lấp đầy chiều cao body */
+
+        /* === SỬA LỖI CUỘN TRANG === */
+        overflow-y: auto;  /* <-- THAY ĐỔI: Cho phép cuộn dọc */
+        overflow-x: hidden; /* <-- THÊM: Ngăn cuộn ngang */
+    }
+
+    .sidebar-wrapper {
+        /* ... (code cũ: display: none, position: absolute, etc.) ... */
+        display: none;
+        position: absolute;
+        z-index: 1000;
+        top: 0; left: 0; height: 100%;
+        box-shadow: 2px 0 8px rgba(0,0,0,0.5);
+    }
+    .sidebar-wrapper.is-open {
+        display: flex;
+    }
+
+    .main-content {
+        width: 100%;
+        box-sizing: border-box;
+
+        /* === SỬA LỖI CUỘN TRANG === */
+        flex: none; /* <-- THÊM: Tắt flex */
+        height: auto; /* <-- THÊM: Cho phép nội dung dài ra */
+        overflow-y: visible; /* <-- THÊM: Để page-container xử lý cuộn */
+    }
+
+    /* --- 2. Hiển thị nút Hamburger --- */
+    .hamburger-menu {
+        display: inline-block;
+        margin-right: 15px;
+        font-size: 1.2em;
+        background: none; border: none; cursor: pointer; padding: 0 5px; color: #333;
+    }
+    .header-bar {
+        display: flex;
+        align-items: center;
+    }
+
+    /* --- 3. Xử lý Form (1 cột) --- */
+    /* (Giữ nguyên code .form-grid, .profile-info, .login .form-group...) */
+    main.main-content .form-grid,
+    main.main-content .profile-info {
+        grid-template-columns: 1fr;
+    }
+    main.main-content .form-fields label,
+    main.main-content .info-item label,
+    main.main-content .form-grid label {
+        text-align: left;
+    }
+    main.main-content .form-actions {
+        grid-column: 1 / -1;
+        text-align: center;
+    }
+    .login .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    /* --- 4. Xử lý Bảng (Tables) --- */
+    /* (Giữ nguyên) */
+    main.main-content .report-table,
+    main.main-content .search-results,
+    main.main-content table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    /* --- 5. Xử lý Lưới Bán hàng (Sales Grid) --- */
+    /* (Giữ nguyên) */
+    main.main-content .table-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    /* --- 6. Xử lý Modal (Cửa sổ bật lên) --- */
+    /* (Giữ nguyên) */
+    .modal-content {
+        width: 90vw;
+        margin: 5% auto;
+    }
+    #mergeTableModal .merge-container,
+    #splitTableModal .split-container {
+        flex-direction: column;
+    }
+    .merge-arrow, .split-arrow {
+        transform: rotate(90deg);
+        margin: 15px auto;
+    }
+}

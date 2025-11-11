@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Trang cá nhân</title>
+    <th:block th:insert="~{fragments/header :: header-tags}"></th:block>
     <link rel="stylesheet" th:href="@{/css/layout.css}" />
 </head>
 <body>
 
 <form th:action="@{/logout}" method="post" id="logoutForm" style="display: none;"></form>
 
-<div class="header-bar">
-    Phần mềm quản lý quán cà phê ver 1.0
-</div>
+<div th:insert="~{fragments/header :: header-bar}"></div>
 
 <div class="page-container">
 

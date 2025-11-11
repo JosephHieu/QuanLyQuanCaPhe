@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Tìm kiếm Thực đơn</title>
+    <th:block th:insert="~{fragments/header :: header-tags}"></th:block>
     <link rel="stylesheet" th:href="@{/css/layout.css}" />
     <link rel="stylesheet" th:href="@{/css/menu.css}" />
 </head>
 <body>
-<div th:insert="~{fragments/header :: header}"></div>
+<div th:insert="~{fragments/header :: header-bar}"></div>
+
 <div class="page-container">
     <div class="sidebar-wrapper">
         <div th:insert="~{fragments/sidebar :: sidebar}"></div>

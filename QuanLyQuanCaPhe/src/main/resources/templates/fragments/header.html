@@ -1,9 +1,24 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="header-tags">
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" th:href="@{/css/layout.css}" />
+</head>
+
 <body>
-<header th:fragment="header">
+
+<header th:fragment="header-bar" class="header-bar">
+
+    <button type="button" class="hamburger-menu" id="hamburgerMenu">
+        &#9776; </button>
+
     Phần mềm quản lý quán cà phê ver 1.0
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
+
 </header>
+
 </body>
 </html>

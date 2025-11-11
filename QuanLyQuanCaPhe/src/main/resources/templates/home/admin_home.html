@@ -3,14 +3,13 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
+    <th:block th:insert="~{fragments/header :: header-tags}"></th:block>
     <title>Trang chủ Quản lý</title>
     <link rel="stylesheet" th:href="@{/css/layout.css}" />
 </head>
 <body>
 
-<div class="header-bar">
-    Phần mềm quản lý quán cà phê ver 1.0
-</div>
+<div th:insert="~{fragments/header :: header-bar}"></div>
 
 <div class="page-container">
 
