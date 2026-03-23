@@ -20,7 +20,7 @@ import java.util.Set;
  * tìm một người dùng ({@link TaiKhoan}) trong CSDL bằng Tên đăng nhập
  * và chuyển đổi nó thành một đối tượng {@link UserDetails} mà Spring Security có thể hiểu được.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Service
