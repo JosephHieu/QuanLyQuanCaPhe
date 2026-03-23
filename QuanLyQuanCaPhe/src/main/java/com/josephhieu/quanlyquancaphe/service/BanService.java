@@ -11,7 +11,7 @@ import java.util.List;
  * Lớp Service (Nghiệp vụ) cho các chức năng liên quan đến Bàn ({@link Ban}).
  * Chủ yếu dùng để lấy thông tin bàn cho trang Quản lý Bán hàng.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Service
