@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * Lớp Service (Nghiệp vụ) cho các chức năng liên quan đến Ngân sách.
  * Bao gồm logic tổng hợp Thu/Chi cho báo cáo và CRUD các khoản Chi tiêu.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Service
