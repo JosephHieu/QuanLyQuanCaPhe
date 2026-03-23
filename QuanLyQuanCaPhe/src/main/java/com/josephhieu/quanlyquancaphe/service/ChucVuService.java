@@ -12,7 +12,7 @@ import java.util.List;
  * Chủ yếu dùng để lấy danh sách Chức vụ cho dropdown
  * trong form Thêm/Sửa Nhân viên.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Service
