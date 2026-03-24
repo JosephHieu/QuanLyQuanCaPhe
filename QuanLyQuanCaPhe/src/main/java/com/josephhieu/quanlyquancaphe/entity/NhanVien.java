@@ -10,7 +10,7 @@ import lombok.Setter;
  * Lưu trữ thông tin cá nhân của nhân viên.
  * (File này đã được comment ở câu trước, đây là bản lặp lại)
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

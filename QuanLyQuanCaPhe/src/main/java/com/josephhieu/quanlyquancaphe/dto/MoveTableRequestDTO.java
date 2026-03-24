@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
  * DTO (Data Transfer Object) dùng để đóng gói yêu cầu "Chuyển bàn"
  * từ JavaScript (fetch) gửi lên {@link com.josephhieu.quanlyquancaphe.controller.SalesController}.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data

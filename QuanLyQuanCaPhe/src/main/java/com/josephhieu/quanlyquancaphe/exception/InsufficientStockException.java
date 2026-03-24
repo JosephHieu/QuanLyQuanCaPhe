@@ -6,7 +6,7 @@ package com.josephhieu.quanlyquancaphe.exception;
  * {@link com.josephhieu.quanlyquancaphe.entity.HangHoa} (Hàng hóa)
  * nhưng số lượng tồn kho (SoLuong) không đủ.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 public class InsufficientStockException extends RuntimeException {

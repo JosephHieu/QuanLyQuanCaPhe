@@ -21,7 +21,7 @@ import java.util.List;
  * cho chức năng "Xuất file" trong Báo cáo.
  * Sử dụng thư viện Apache POI.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Service

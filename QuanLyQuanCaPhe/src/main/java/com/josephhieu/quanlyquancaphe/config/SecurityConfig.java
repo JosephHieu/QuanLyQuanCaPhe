@@ -18,7 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
  * @version 1.0
  */
 @Configuration
-@EnableWebSecurity // Kích hoạt tính năng bảo mật web của Spring Security
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Autowired

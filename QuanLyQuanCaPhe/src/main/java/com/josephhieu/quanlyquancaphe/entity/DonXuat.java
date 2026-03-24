@@ -12,7 +12,7 @@ import java.time.LocalDate;
  * Lưu trữ lịch sử các giao dịch xuất hàng hóa ra khỏi kho
  * (ví dụ: hàng hỏng, hủy, trả lại).
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

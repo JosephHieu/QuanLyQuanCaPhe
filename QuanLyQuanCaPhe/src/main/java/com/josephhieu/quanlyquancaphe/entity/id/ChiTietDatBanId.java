@@ -14,7 +14,7 @@ import java.io.Serializable;
  * Được sử dụng với annotation {@code @EmbeddedId} trong Entity ChiTietDatBan.
  * Lớp này phải implement {@link Serializable} và định nghĩa {@code equals()} và {@code hashCode()}.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Embeddable // Đánh dấu là một lớp có thể nhúng

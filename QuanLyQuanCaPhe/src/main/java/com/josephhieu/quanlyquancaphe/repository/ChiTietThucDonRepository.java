@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Repository (Tầng truy cập CSDL) cho Entity {@link ChiTietThucDon} (công thức món ăn).
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Repository

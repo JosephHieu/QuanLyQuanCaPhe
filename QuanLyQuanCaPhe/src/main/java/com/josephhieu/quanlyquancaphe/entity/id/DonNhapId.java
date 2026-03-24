@@ -14,7 +14,7 @@ import java.io.Serializable;
  * Được sử dụng với annotation {@code @EmbeddedId} trong Entity DonNhap.
  * Lớp này phải implement {@link Serializable} và định nghĩa {@code equals()} và {@code hashCode()}.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu (Tên của bạn
  * @version 1.0
  */
 @Embeddable

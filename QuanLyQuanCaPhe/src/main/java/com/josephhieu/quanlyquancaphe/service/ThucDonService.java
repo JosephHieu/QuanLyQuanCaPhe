@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * Lớp Service (Nghiệp vụ) cho các chức năng liên quan đến Thực đơn ({@link ThucDon}).
  * Bao gồm logic CRUD cho Món ăn và quản lý Công thức ({@link ChiTietThucDon}).
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Service

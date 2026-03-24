@@ -9,7 +9,7 @@ import java.util.List;
  * Gửi từ JavaScript (fetch) lên {@link com.josephhieu.quanlyquancaphe.controller.SalesController}
  * khi người dùng xác nhận modal Tách bàn.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data

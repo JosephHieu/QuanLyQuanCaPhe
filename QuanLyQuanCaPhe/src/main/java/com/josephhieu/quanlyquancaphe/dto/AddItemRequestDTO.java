@@ -10,7 +10,7 @@ import java.util.List;
  * DTO (Data Transfer Object) dùng để đóng gói yêu cầu Thêm món ăn (hoặc Cập nhật)
  * từ modal "Chọn thực đơn" (trang Quản lý Bán hàng) gửi lên Controller.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data

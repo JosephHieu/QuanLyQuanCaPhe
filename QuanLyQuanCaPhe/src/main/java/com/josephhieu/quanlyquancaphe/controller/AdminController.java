@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  * Controller chịu trách nhiệm xử lý các yêu cầu cho trang chủ (homepage)
  * của vai trò Admin.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  * @since 2025-11-03
  */

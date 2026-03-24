@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
  * Dùng để hiển thị chi tiết món ăn trong modal "Xem bàn"
  * và cũng dùng trong các yêu cầu cập nhật đơn hàng.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
-@Data // Tự động tạo getter, setter, v.v.
-@NoArgsConstructor // Constructor rỗng
-@AllArgsConstructor // Constructor đầy đủ tham số
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderItemDTO {
 
     /**

@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
  * Gửi từ JavaScript (fetch) lên {@link com.josephhieu.quanlyquancaphe.controller.SalesController}
  * khi người dùng nhấn nút "Thanh toán" trong modal.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data
-@NoArgsConstructor // Cần cho Jackson (JSON Deserialization)
+@NoArgsConstructor
 public class ProcessPaymentRequestDTO {
 
     /**

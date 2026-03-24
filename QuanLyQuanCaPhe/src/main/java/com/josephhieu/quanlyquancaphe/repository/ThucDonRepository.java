@@ -10,7 +10,7 @@ import java.util.List;
  * Repository (Tầng truy cập CSDL) cho Entity {@link ThucDon}.
  * Chứa các phương thức tìm kiếm và sắp xếp tùy chỉnh cho Thực đơn.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Repository

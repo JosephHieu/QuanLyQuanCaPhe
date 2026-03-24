@@ -22,7 +22,7 @@ import java.util.Optional;
  * Lớp Service (Nghiệp vụ) cho các chức năng liên quan đến Nhân viên ({@link NhanVien}).
  * Bao gồm logic CRUD, xử lý Tài khoản liên kết, và Cập nhật Profile.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Service

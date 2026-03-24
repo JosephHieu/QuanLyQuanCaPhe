@@ -10,7 +10,7 @@ import java.util.List;
  * Đóng gói tất cả dữ liệu từ form (thông tin món chính và danh sách thành phần)
  * để gửi lên Controller.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data

@@ -9,7 +9,7 @@ import lombok.Setter;
  * Entity đại diện cho bảng 'DonViTinh' (Đơn vị tính) trong CSDL.
  * Lưu trữ các đơn vị đo lường (ví dụ: "kg", "gam", "lít", "cái").
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

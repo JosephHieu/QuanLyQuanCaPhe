@@ -7,7 +7,7 @@ package com.josephhieu.quanlyquancaphe.exception;
  * {@link com.josephhieu.quanlyquancaphe.entity.TaiKhoan} (Tài khoản)
  * mới với một `TenDangNhap` (Tên đăng nhập) đã tồn tại trong cơ sở dữ liệu.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 public class UsernameAlreadyExistsException extends RuntimeException {

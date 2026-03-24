@@ -12,7 +12,7 @@ import java.math.BigDecimal;
  * Lưu trữ thông tin về các vai trò công việc và mức lương tương ứng.
  * (ví dụ: Quản lý, Pha chế, Phục vụ).
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

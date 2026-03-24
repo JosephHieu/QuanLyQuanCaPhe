@@ -26,7 +26,7 @@ import java.util.function.Function;
  * Bao gồm: Xem chi tiết bàn, Chuyển bàn, Gộp bàn, Tách bàn,
  * Đặt bàn, Hủy bàn, Thêm/Sửa món, và Thanh toán.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Service

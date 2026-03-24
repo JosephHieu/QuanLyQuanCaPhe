@@ -11,7 +11,7 @@ import java.time.LocalDate;
  * Entity đại diện cho bảng 'KhuyenMai' (Khuyến mãi).
  * Lưu trữ thông tin về các chương trình giảm giá, marketing.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

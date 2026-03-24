@@ -21,7 +21,7 @@ import java.util.List;
  * liên quan đến order, bàn (chuyển, gộp, tách, thanh toán, v.v.)
  * thông qua các API endpoint (trả về JSON).
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  * @since 2025-11-03
  */

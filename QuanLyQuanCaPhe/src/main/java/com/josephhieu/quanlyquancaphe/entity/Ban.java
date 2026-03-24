@@ -9,7 +9,7 @@ import lombok.Setter;
  * Entity đại diện cho bảng 'Ban' (Bàn) trong CSDL.
  * Lưu trữ thông tin về từng bàn trong quán cà phê.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

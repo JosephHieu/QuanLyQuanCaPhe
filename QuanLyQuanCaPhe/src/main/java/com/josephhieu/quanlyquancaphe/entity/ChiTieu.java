@@ -11,7 +11,7 @@ import java.time.LocalDate;
  * Entity đại diện cho bảng 'ChiTieu' (Chi tiêu) trong CSDL.
  * Lưu trữ các khoản chi phí của quán (ví dụ: tiền điện, tiền nước, thuê mặt bằng).
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

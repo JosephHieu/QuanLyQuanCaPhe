@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
  * Gửi từ JavaScript (fetch) lên {@link com.josephhieu.quanlyquancaphe.controller.SalesController}
  * khi người dùng điền thông tin vào modal "Đặt bàn" và nhấn "Đặt bàn".
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data

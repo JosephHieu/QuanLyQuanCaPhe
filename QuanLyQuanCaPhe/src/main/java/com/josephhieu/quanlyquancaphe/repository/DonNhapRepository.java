@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 /**
  * Repository (Tầng truy cập CSDL) cho Entity {@link DonNhap}.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Repository

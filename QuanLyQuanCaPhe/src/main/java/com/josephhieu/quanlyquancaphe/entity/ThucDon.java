@@ -10,7 +10,7 @@ import java.math.BigDecimal;
  * Entity đại diện cho bảng 'ThucDon' (Thực đơn / Món ăn).
  * Lưu trữ thông tin cơ bản của một món ăn hoặc đồ uống bán tại quán.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

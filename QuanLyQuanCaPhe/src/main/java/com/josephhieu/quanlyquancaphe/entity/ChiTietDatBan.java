@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  * Entity này sử dụng một Khóa chính Phức hợp (Composite Primary Key)
  * được định nghĩa trong lớp {@link ChiTietDatBanId}.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

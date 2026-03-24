@@ -15,7 +15,7 @@ import java.math.BigDecimal;
  * Entity này sử dụng Khóa chính Phức hợp (Composite Primary Key)
  * được định nghĩa trong lớp {@link ChiTietThucDonId}.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

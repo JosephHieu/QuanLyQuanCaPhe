@@ -16,7 +16,7 @@ import java.util.Optional;
  * Lớp Service (Nghiệp vụ) cho các chức năng liên quan đến Thiết bị ({@link ThietBi}).
  * Bao gồm logic CRUD cho quản lý thiết bị.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Service

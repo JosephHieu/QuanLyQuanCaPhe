@@ -13,7 +13,7 @@ import java.util.List;
  * Chủ yếu dùng để lấy danh sách Đơn vị tính (kg, gam, lít, v.v.)
  * cho dropdown trong form Thêm/Sửa Hàng hóa.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Service

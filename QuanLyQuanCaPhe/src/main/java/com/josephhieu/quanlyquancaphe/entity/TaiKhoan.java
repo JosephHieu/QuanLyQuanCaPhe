@@ -9,7 +9,7 @@ import lombok.Setter;
  * Entity đại diện cho bảng 'TaiKhoan' (Tài khoản) trong CSDL.
  * Lưu trữ thông tin đăng nhập và quyền hạn của người dùng.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

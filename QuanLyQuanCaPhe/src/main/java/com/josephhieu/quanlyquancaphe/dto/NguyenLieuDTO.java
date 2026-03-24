@@ -8,7 +8,7 @@ import lombok.Data;
  * Dùng để truyền tải thông tin cơ bản của nguyên liệu một cách an toàn,
  * đặc biệt là khi gửi dữ liệu lên frontend (ví dụ: cho dropdowns).
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data // Tự động tạo getter, setter, toString, equals, hashCode

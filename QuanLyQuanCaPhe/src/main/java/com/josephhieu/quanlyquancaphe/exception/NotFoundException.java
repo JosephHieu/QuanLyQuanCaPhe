@@ -6,7 +6,7 @@ package com.josephhieu.quanlyquancaphe.exception;
  * cố gắng tìm kiếm một đối tượng (Entity) bằng ID hoặc một khóa duy nhất khác
  * nhưng không tìm thấy kết quả nào trong cơ sở dữ liệu.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 public class NotFoundException extends RuntimeException {

@@ -12,7 +12,7 @@ import java.time.LocalDate;
  * Lưu trữ thông tin về tài sản, thiết bị của quán
  * (ví dụ: Máy pha cà phê, Bàn ghế, Tủ lạnh).
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

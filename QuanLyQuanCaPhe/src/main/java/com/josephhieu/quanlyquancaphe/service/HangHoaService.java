@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * Quản lý Kho hàng ({@link HangHoa}).
  * Bao gồm logic Nhập, Xuất, Sửa, Xóa, Tìm kiếm, và Lấy danh sách hàng hóa.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Service

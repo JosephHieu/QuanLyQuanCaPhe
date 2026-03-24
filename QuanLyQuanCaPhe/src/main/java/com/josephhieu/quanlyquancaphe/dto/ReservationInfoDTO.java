@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
  * DTO (Data Transfer Object) "chỉ đọc" (read-only)
  * dùng để hiển thị thông tin Đặt trước trong modal "Xem bàn".
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data

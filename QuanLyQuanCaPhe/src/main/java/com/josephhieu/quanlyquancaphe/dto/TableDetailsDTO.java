@@ -9,7 +9,7 @@ import java.util.List;
  * dùng để chứa thông tin chi tiết đầy đủ của một bàn khi người dùng
  * nhấn nút "Xem bàn" trong trang Quản lý Bán hàng.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data

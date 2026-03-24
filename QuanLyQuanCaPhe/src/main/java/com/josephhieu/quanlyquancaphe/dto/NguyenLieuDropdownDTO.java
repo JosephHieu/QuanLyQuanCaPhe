@@ -16,7 +16,7 @@ import lombok.Data;
  * @version 1.0
  */
 @Data
-@AllArgsConstructor // Được sử dụng trong Service (stream().map(...))
+@AllArgsConstructor
 public class NguyenLieuDropdownDTO {
 
     /**

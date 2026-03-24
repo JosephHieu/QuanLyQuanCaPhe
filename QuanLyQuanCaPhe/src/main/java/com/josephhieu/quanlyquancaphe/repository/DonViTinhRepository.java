@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
  * Repository (Tầng truy cập CSDL) cho Entity {@link DonViTinh}.
  * Kế thừa JpaRepository để có sẵn các hàm CRUD cơ bản.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Repository

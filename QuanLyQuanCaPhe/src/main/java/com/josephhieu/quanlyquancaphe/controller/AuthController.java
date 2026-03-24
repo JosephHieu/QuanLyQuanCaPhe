@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  * Controller chịu trách nhiệm xử lý các yêu cầu liên quan đến
  * xác thực (Authentication), cụ thể là hiển thị trang đăng nhập.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  * @since 2025-11-03
  */

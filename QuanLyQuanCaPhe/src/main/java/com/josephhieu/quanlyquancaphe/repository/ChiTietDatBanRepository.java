@@ -10,7 +10,7 @@ import java.util.Optional;
 /**
  * Repository (Tầng truy cập CSDL) cho Entity {@link ChiTietDatBan}.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Repository

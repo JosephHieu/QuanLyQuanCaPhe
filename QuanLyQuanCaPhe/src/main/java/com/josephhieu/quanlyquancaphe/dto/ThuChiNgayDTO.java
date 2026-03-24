@@ -11,7 +11,7 @@ import java.sql.Date; // Thêm import cho constructor
  * trong bảng báo cáo Thu/Chi.
  * Lưu trữ tổng Thu và tổng Chi cho một Ngày cụ thể.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data

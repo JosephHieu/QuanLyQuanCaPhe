@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
  * DTO (Data Transfer Object) dùng để đóng gói yêu cầu Hủy bàn.
  * Chỉ chứa thông tin ID của bàn cần hủy.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data

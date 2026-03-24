@@ -11,7 +11,7 @@ import java.math.BigDecimal;
  * Lưu trữ thông tin về các nguyên vật liệu, hàng hóa trong kho
  * (ví dụ: Hạt cà phê, Sữa tươi, Bánh ngọt...).
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * Entity đại diện cho bảng 'HoaDon' (Hóa đơn).
  * Lưu trữ thông tin chính của mỗi giao dịch bán hàng.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Entity

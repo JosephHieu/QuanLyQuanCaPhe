@@ -10,7 +10,7 @@ import java.util.List;
  * dùng để chứa kết quả cuối cùng của Báo cáo Thu/Chi.
  * Bao gồm danh sách chi tiết theo ngày và tổng cộng cuối cùng.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data

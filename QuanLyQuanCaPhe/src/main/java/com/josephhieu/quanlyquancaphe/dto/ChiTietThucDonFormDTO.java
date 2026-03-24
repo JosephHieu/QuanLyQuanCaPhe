@@ -8,7 +8,7 @@ import java.math.BigDecimal;
  * (nguyên liệu) trong form Thêm/Sửa Món ăn (Thực đơn).
  * Dùng làm phần tử trong List của {@link ThucDonFormDTO}.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data

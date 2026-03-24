@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * Spring MVC và Thymeleaf bind (liên kết) dữ liệu form động (thêm/xóa dòng)
  * vào một List bên trong một đối tượng dễ dàng hơn là bind vào một List trần.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Data

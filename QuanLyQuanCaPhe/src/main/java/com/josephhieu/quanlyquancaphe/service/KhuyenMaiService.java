@@ -18,7 +18,7 @@ import java.util.Optional;
  * Lớp Service (Nghiệp vụ) cho các chức năng liên quan đến Khuyến mãi ({@link KhuyenMai}).
  * Bao gồm logic CRUD và xử lý ràng buộc khóa ngoại với HoaDon.
  *
- * @author Joseph Hieu (Tên của bạn)
+ * @author Joseph Hieu
  * @version 1.0
  */
 @Service
