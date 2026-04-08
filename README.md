@@ -101,3 +101,34 @@ git clone https://github.com/JosephHieu/QuanLyQuanCaPhe.git
 ## Sơ đồ trạng thái
 <img width="1416" height="1066" alt="image" src="https://github.com/user-attachments/assets/3c7e1183-a7a0-43bd-8028-66c3a2e1d33d" />
 
+## UI
+### Trang chủ
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/d03444bf-01fb-472d-af4f-0b904c35baba" />
+
+### Trang cá nhân
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/2662c34b-97c4-4fa7-9494-786b7a5658d0" />
+
+### Quản lý bán hàng
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/22d30f3a-7708-48a5-888e-f3e197ddb2a7" />
+
+### Quản lý Nhân viên
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/f14fee39-60a2-4773-99b2-d27dda644ae9" />
+
+### Quản lý Trang thiết bị
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/cb51db1d-5bc0-4f15-974b-8f94e9e7532f" />
+
+### Quản lý Kho hàng
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/55348246-81ce-46ff-a792-c85a2be00acf" />
+
+### Quản lý Thực đơn
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/f785723f-b084-4a74-a64f-d6c2bf1f67ab" />
+
+### Quản lý Marketing
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/7732d2e2-c2df-437a-9f60-c3681aba96b3" />
+
+### Quản lý Ngân sách
+<img width="1920" height="1031" alt="image" src="https://github.com/user-attachments/assets/0e18cb1b-5a6d-45e2-bf2e-f3695ba2c6f6" />
+
+### Thống kê & Báo cáo
+<img width="1920" height="1631" alt="image" src="https://github.com/user-attachments/assets/847650ec-a877-4458-a093-e09fdcaacd20" />
+
