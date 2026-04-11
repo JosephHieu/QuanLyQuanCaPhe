@@ -132,3 +132,5 @@ git clone https://github.com/JosephHieu/QuanLyQuanCaPhe.git
 ### Thống kê & Báo cáo
 <img width="1920" height="1631" alt="image" src="https://github.com/user-attachments/assets/847650ec-a877-4458-a093-e09fdcaacd20" />
 
+
+#### Lưu ý: Còn một số tính năng chưa được hoàn thiện nếu bạn muốn clone dự án về thì có thể phát triển tiếp những tính năng còn thiếu đó.
